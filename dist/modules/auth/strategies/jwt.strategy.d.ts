@@ -1,6 +1,7 @@
+import { Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserService } from '../user/user.service';
-declare const JwtStrategy_base: any;
+import { UserService } from '../../user/user.service';
+declare const JwtStrategy_base: new (...args: any[]) => Strategy;
 export declare class JwtStrategy extends JwtStrategy_base {
     private configService;
     private userService;
@@ -10,7 +11,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
         email: string;
         iat: number;
         exp: number;
-    }): Promise<any>;
+    }): Promise<import("../../../entities/user.entity").User>;
 }
 export {};
 //# sourceMappingURL=jwt.strategy.d.ts.map

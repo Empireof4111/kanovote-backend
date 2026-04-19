@@ -4,7 +4,7 @@ export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
     register(registerDto: RegisterDto): Promise<{
-        access_token: any;
+        access_token: string;
         user: {
             id: string;
             firstName: string;
@@ -17,7 +17,7 @@ export declare class AuthController {
         };
     }>;
     login(req: any, session: any): Promise<{
-        access_token: any;
+        access_token: string;
         user: {
             id: string;
             firstName: string;
@@ -51,7 +51,7 @@ export declare class AuthController {
         message: string;
     }>;
     refreshToken(req: any): Promise<{
-        access_token: any;
+        access_token: string;
         user: {
             id: string;
             firstName: string;

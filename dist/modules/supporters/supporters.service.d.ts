@@ -11,22 +11,22 @@ export declare class SupporterService {
         lga?: string;
         status?: VerificationStatus;
         search?: string;
-    }): Promise<any>;
+    }): Promise<[Supporter[], number]>;
     update(id: string, updateSupporterDto: UpdateSupporterDto): Promise<Supporter>;
     verify(id: string, verifySupporterDto: VerifySupporterDto, verifiedByUserId: string): Promise<Supporter>;
     getStatistics(): Promise<{
-        total: any;
-        verified: any;
-        pending: any;
-        rejected: any;
+        total: number;
+        verified: number;
+        pending: number;
+        rejected: number;
         verificationRate: string | number;
     }>;
     getStatisticsByLocation(state: string, lga?: string): Promise<{
         state: string;
         lga: string | null;
-        total: any;
-        verified: any;
-        pending: any;
+        total: number;
+        verified: number;
+        pending: number;
         verificationRate: string | number;
     }>;
     delete(id: string): Promise<void>;

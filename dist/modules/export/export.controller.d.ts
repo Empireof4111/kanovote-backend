@@ -1,10 +1,10 @@
-import { ExportService } from './export.service';
 import { Response } from 'express';
+import { ExportService } from './export.service';
 export declare class ExportController {
     private exportService;
     constructor(exportService: ExportService);
-    exportSupportersCSV(state?: string, lga?: string, status?: string, res?: Response): Promise<void>;
-    exportAgentsCSV(state?: string, lga?: string, res?: Response): Promise<void>;
-    exportRegistrationsCSV(agentId?: string, status?: string, res?: Response): Promise<void>;
+    exportSupportersCSV(res: Response, state?: string, lga?: string, status?: string): Promise<void>;
+    exportAgentsCSV(res: Response, state?: string, lga?: string): Promise<void>;
+    exportRegistrationsCSV(res: Response, agentId?: string, status?: string): Promise<void>;
 }
 //# sourceMappingURL=export.controller.d.ts.map

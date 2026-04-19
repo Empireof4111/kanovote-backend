@@ -1,21 +1,26 @@
 import { Repository } from 'typeorm';
 import { Agent, AgentStatus } from '@/entities/agent.entity';
-import { User } from '@/entities/user.entity';
-import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto } from './dto';
+import { User, UserRole } from '@/entities/user.entity';
+import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
 export declare class AgentService {
     private agentRepository;
     private userRepository;
     constructor(agentRepository: Repository<Agent>, userRepository: Repository<User>);
+    registerAgent(registerAgentDto: RegisterAgentDto): Promise<{
+        agent: Agent;
+        user: User;
+    }>;
     create(createAgentDto: CreateAgentDto): Promise<Agent>;
     findById(id: string): Promise<Agent>;
     findByUserId(userId: string): Promise<Agent | null>;
-    findAll(skip?: number, take?: number, filters?: AgentPerformanceDto): Promise<any>;
+    findAll(skip?: number, take?: number, filters?: AgentPerformanceDto): Promise<[Agent[], number]>;
     update(id: string, updateAgentDto: UpdateAgentDto): Promise<Agent>;
+    resetPassword(userId: string, resetPasswordDto: ResetPasswordDto): Promise<void>;
     updateRegistrationStats(agentId: string): Promise<void>;
     getPerformanceReport(agentId: string): Promise<{
         agentId: string;
         agentName: string;
-        role: import("@/entities/user.entity").UserRole;
+        role: UserRole;
         state: string;
         lga: string;
         ward: string;

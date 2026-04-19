@@ -27,7 +27,7 @@ export class FileUploadService {
     fileType: FileType,
   ): Promise<FileUpload> {
     // Validate file
-    const maxFileSize = parseInt(process.env.MAX_FILE_SIZE) || 5242880; // 5MB default
+    const maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '5242880') || 5242880; // 5MB default
     if (file.size > maxFileSize) {
       throw new BadRequestException(`File size exceeds maximum limit of ${maxFileSize / 1024 / 1024}MB`);
     }

@@ -27,7 +27,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Request() req, @Session() session: any) {
+  async login(@Request() req: any, @Session() session: any) {
     // Store session data for session-based authentication
     session.userId = req.user.id;
     session.userRole = req.user.role;
@@ -38,7 +38,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   @HttpCode(HttpStatus.OK)
-  async getProfile(@Request() req) {
+  async getProfile(@Request() req: any) {
     return {
       id: req.user.id,
       firstName: req.user.firstName,
@@ -77,7 +77,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Post('refresh-token')
   @HttpCode(HttpStatus.OK)
-  async refreshToken(@Request() req) {
+  async refreshToken(@Request() req: any) {
     return this.authService.login(req.user);
   }
 }

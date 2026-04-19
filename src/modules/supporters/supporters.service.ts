@@ -96,7 +96,7 @@ export class SupporterService {
     const supporter = await this.findById(id);
 
     supporter.status = verifySupporterDto.status;
-    supporter.verificationNotes = verifySupporterDto.notes;
+    supporter.verificationNotes = verifySupporterDto.notes || '';
     supporter.verifiedByUserId = verifiedByUserId;
     supporter.verifiedAt = new Date();
 

@@ -56,10 +56,6 @@ export class AgentService {
 
     return { agent: savedAgent, user: savedUser };
   }
-    const savedAgent = await this.agentRepository.save(agent);
-
-    return { agent: savedAgent, user: savedUser };
-  }
 
   async create(createAgentDto: CreateAgentDto): Promise<Agent> {
     const user = await this.userRepository.findOne({

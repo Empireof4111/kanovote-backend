@@ -7,7 +7,7 @@ import { LocalGovernmentArea } from '@/entities/lga.entity';
 import { Ward } from '@/entities/ward.entity';
 import { PollingUnit } from '@/entities/polling-unit.entity';
 import { Supporter } from '@/entities/supporter.entity';
-import { Registration } from '@/entities/registration.entity';
+import { Registration, RegistrationStatus } from '@/entities/registration.entity';
 import {
   CreateLgaDto,
   CreateWardDto,
@@ -341,9 +341,9 @@ export class AdminService {
   async getSupporterStats() {
     const [total, verified, pending, rejected] = await Promise.all([
       this.supporterRepository.count(),
-      this.registrationRepository.count({ where: { status: 'verified' } }),
-      this.registrationRepository.count({ where: { status: 'pending' } }),
-      this.registrationRepository.count({ where: { status: 'rejected' } }),
+      this.registrationRepository.count({ where: { status: RegistrationStatus.VERIFIED } }),
+      this.registrationRepository.count({ where: { status: RegistrationStatus.IN_PROGRESS } }),
+      this.registrationRepository.count({ where: { status: RegistrationStatus.REJECTED } }),
     ]);
 
     return {

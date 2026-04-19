@@ -1,0 +1,1 @@
+{"version":3,"file":"lga.entity.d.ts","sourceRoot":"","sources":["../../src/entities/lga.entity.ts"],"names":[],"mappings":"AASA,OAAO,EAAE,IAAI,EAAE,MAAM,eAAe,CAAC;AAErC,qBAEa,mBAAmB;IAE9B,EAAE,EAAE,MAAM,CAAC;IAGX,IAAI,EAAE,MAAM,CAAC;IAGb,IAAI,EAAE,MAAM,CAAC;IAGb,WAAW,EAAE,MAAM,CAAC;IAGpB,SAAS,EAAE,IAAI,CAAC;IAGhB,SAAS,EAAE,IAAI,CAAC;IAMhB,KAAK,EAAE,IAAI,EAAE,CAAC;CACf"}

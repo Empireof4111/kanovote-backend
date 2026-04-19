@@ -33,7 +33,7 @@ export class FileUploadController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.FIELD_AGENT, UserRole.SUPERVISOR)
   @HttpCode(HttpStatus.CREATED)
   async uploadFile(
-    @Request() req,
+    @Request() req: any,
     @Param('supporterId') supporterId: string,
     @UploadedFile() file: Express.Multer.File,
     @Body() { fileType }: { fileType: FileType },

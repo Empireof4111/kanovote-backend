@@ -8,19 +8,19 @@ export declare class RegistrationController {
         supporterId: string;
     }): Promise<import("@/entities/registration.entity").Registration>;
     getStatistics(): Promise<{
-        total: any;
-        initiated: any;
-        inProgress: any;
-        completed: any;
-        verified: any;
-        rejected: any;
+        total: number;
+        initiated: number;
+        inProgress: number;
+        completed: number;
+        verified: number;
+        rejected: number;
     }>;
     findById(id: string): Promise<import("@/entities/registration.entity").Registration>;
     findByAgent(agentId: string, skip?: string, take?: string): Promise<{
-        registrations: any;
-        total: any;
+        registrations: import("@/entities/registration.entity").Registration[];
+        total: number;
     }>;
-    findBySupporter(supporterId: string): Promise<any>;
+    findBySupporter(supporterId: string): Promise<import("@/entities/registration.entity").Registration[]>;
     updateStatus(id: string, { status }: {
         status: RegistrationStatus;
     }): Promise<import("@/entities/registration.entity").Registration>;

@@ -1,128 +1,94 @@
 "use strict";
-var __esDecorate = (this && this.__esDecorate) || function (ctor, descriptorIn, decorators, contextIn, initializers, extraInitializers) {
-    function accept(f) { if (f !== void 0 && typeof f !== "function") throw new TypeError("Function expected"); return f; }
-    var kind = contextIn.kind, key = kind === "getter" ? "get" : kind === "setter" ? "set" : "value";
-    var target = !descriptorIn && ctor ? contextIn["static"] ? ctor : ctor.prototype : null;
-    var descriptor = descriptorIn || (target ? Object.getOwnPropertyDescriptor(target, contextIn.name) : {});
-    var _, done = false;
-    for (var i = decorators.length - 1; i >= 0; i--) {
-        var context = {};
-        for (var p in contextIn) context[p] = p === "access" ? {} : contextIn[p];
-        for (var p in contextIn.access) context.access[p] = contextIn.access[p];
-        context.addInitializer = function (f) { if (done) throw new TypeError("Cannot add initializers after decoration has completed"); extraInitializers.push(accept(f || null)); };
-        var result = (0, decorators[i])(kind === "accessor" ? { get: descriptor.get, set: descriptor.set } : descriptor[key], context);
-        if (kind === "accessor") {
-            if (result === void 0) continue;
-            if (result === null || typeof result !== "object") throw new TypeError("Object expected");
-            if (_ = accept(result.get)) descriptor.get = _;
-            if (_ = accept(result.set)) descriptor.set = _;
-            if (_ = accept(result.init)) initializers.unshift(_);
-        }
-        else if (_ = accept(result)) {
-            if (kind === "field") initializers.unshift(_);
-            else descriptor[key] = _;
-        }
-    }
-    if (target) Object.defineProperty(target, contextIn.name, descriptor);
-    done = true;
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __runInitializers = (this && this.__runInitializers) || function (thisArg, initializers, value) {
-    var useValue = arguments.length > 2;
-    for (var i = 0; i < initializers.length; i++) {
-        value = useValue ? initializers[i].call(thisArg, value) : initializers[i].call(thisArg);
-    }
-    return useValue ? value : void 0;
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __setFunctionName = (this && this.__setFunctionName) || function (f, name, prefix) {
-    if (typeof name === "symbol") name = name.description ? "[".concat(name.description, "]") : "";
-    return Object.defineProperty(f, "name", { configurable: true, value: prefix ? "".concat(prefix, " ", name) : name });
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegistrationService = void 0;
 const common_1 = require("@nestjs/common");
+const typeorm_1 = require("@nestjs/typeorm");
+const typeorm_2 = require("typeorm");
 const registration_entity_1 = require("../../entities/registration.entity");
-let RegistrationService = (() => {
-    let _classDecorators = [(0, common_1.Injectable)()];
-    let _classDescriptor;
-    let _classExtraInitializers = [];
-    let _classThis;
-    var RegistrationService = _classThis = class {
-        constructor(registrationRepository) {
-            this.registrationRepository = registrationRepository;
+let RegistrationService = class RegistrationService {
+    constructor(registrationRepository) {
+        this.registrationRepository = registrationRepository;
+    }
+    async create(agentId, supporterId) {
+        const registration = this.registrationRepository.create({
+            agentId,
+            supporterId,
+            status: registration_entity_1.RegistrationStatus.INITIATED,
+        });
+        return this.registrationRepository.save(registration);
+    }
+    async findById(id) {
+        const registration = await this.registrationRepository.findOne({
+            where: { id },
+            relations: ['agent', 'supporter'],
+        });
+        if (!registration) {
+            throw new common_1.NotFoundException('Registration not found');
         }
-        async create(agentId, supporterId) {
-            const registration = this.registrationRepository.create({
-                agentId,
-                supporterId,
-                status: registration_entity_1.RegistrationStatus.INITIATED,
-            });
-            return this.registrationRepository.save(registration);
+        return registration;
+    }
+    async findByAgentId(agentId, skip = 0, take = 10) {
+        return this.registrationRepository.findAndCount({
+            where: { agentId },
+            relations: ['supporter'],
+            skip,
+            take,
+            order: { createdAt: 'DESC' },
+        });
+    }
+    async findBySupporterId(supporterId) {
+        return this.registrationRepository.find({
+            where: { supporterId },
+            relations: ['agent'],
+        });
+    }
+    async updateStatus(id, status) {
+        const registration = await this.findById(id);
+        registration.status = status;
+        if (status === registration_entity_1.RegistrationStatus.COMPLETED) {
+            registration.completedAt = new Date();
+            registration.completionPercentage = 100;
         }
-        async findById(id) {
-            const registration = await this.registrationRepository.findOne({
-                where: { id },
-                relations: ['agent', 'supporter'],
-            });
-            if (!registration) {
-                throw new common_1.NotFoundException('Registration not found');
-            }
-            return registration;
+        if (status === registration_entity_1.RegistrationStatus.VERIFIED) {
+            registration.verifiedAt = new Date();
         }
-        async findByAgentId(agentId, skip = 0, take = 10) {
-            return this.registrationRepository.findAndCount({
-                where: { agentId },
-                relations: ['supporter'],
-                skip,
-                take,
-                order: { createdAt: 'DESC' },
-            });
-        }
-        async findBySupporterId(supporterId) {
-            return this.registrationRepository.find({
-                where: { supporterId },
-                relations: ['agent'],
-            });
-        }
-        async updateStatus(id, status) {
-            const registration = await this.findById(id);
-            registration.status = status;
-            if (status === registration_entity_1.RegistrationStatus.COMPLETED) {
-                registration.completedAt = new Date();
-                registration.completionPercentage = 100;
-            }
-            if (status === registration_entity_1.RegistrationStatus.VERIFIED) {
-                registration.verifiedAt = new Date();
-            }
-            return this.registrationRepository.save(registration);
-        }
-        async getRegistrationStats() {
-            const [total, initiated, inProgress, completed, verified, rejected] = await Promise.all([
-                this.registrationRepository.count(),
-                this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.INITIATED } }),
-                this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.IN_PROGRESS } }),
-                this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.COMPLETED } }),
-                this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.VERIFIED } }),
-                this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.REJECTED } }),
-            ]);
-            return {
-                total,
-                initiated,
-                inProgress,
-                completed,
-                verified,
-                rejected,
-            };
-        }
-    };
-    __setFunctionName(_classThis, "RegistrationService");
-    (() => {
-        const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
-        __esDecorate(null, _classDescriptor = { value: _classThis }, _classDecorators, { kind: "class", name: _classThis.name, metadata: _metadata }, null, _classExtraInitializers);
-        RegistrationService = _classThis = _classDescriptor.value;
-        if (_metadata) Object.defineProperty(_classThis, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
-        __runInitializers(_classThis, _classExtraInitializers);
-    })();
-    return RegistrationService = _classThis;
-})();
+        return this.registrationRepository.save(registration);
+    }
+    async getRegistrationStats() {
+        const [total, initiated, inProgress, completed, verified, rejected] = await Promise.all([
+            this.registrationRepository.count(),
+            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.INITIATED } }),
+            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.IN_PROGRESS } }),
+            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.COMPLETED } }),
+            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.VERIFIED } }),
+            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.REJECTED } }),
+        ]);
+        return {
+            total,
+            initiated,
+            inProgress,
+            completed,
+            verified,
+            rejected,
+        };
+    }
+};
 exports.RegistrationService = RegistrationService;
+exports.RegistrationService = RegistrationService = __decorate([
+    (0, common_1.Injectable)(),
+    __param(0, (0, typeorm_1.InjectRepository)(registration_entity_1.Registration)),
+    __metadata("design:paramtypes", [typeorm_2.Repository])
+], RegistrationService);
 //# sourceMappingURL=registrations.service.js.map

@@ -27,7 +27,7 @@ export class SupporterController {
   @Post()
   @Roles(UserRole.FIELD_AGENT, UserRole.SUPERVISOR)
   @HttpCode(HttpStatus.CREATED)
-  async create(@Request() req, @Body() createSupporterDto: CreateSupporterDto) {
+  async create(@Request() req: any, @Body() createSupporterDto: CreateSupporterDto) {
     return this.supporterService.create(createSupporterDto, req.user.id);
   }
 
@@ -78,7 +78,7 @@ export class SupporterController {
 
   @Put(':id/verify')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
-  async verify(@Request() req, @Param('id') id: string, @Body() verifySupporterDto: VerifySupporterDto) {
+  async verify(@Request() req: any, @Param('id') id: string, @Body() verifySupporterDto: VerifySupporterDto) {
     return this.supporterService.verify(id, verifySupporterDto, req.user.id);
   }
 

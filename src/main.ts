@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
-import * as session from 'express-session';
-import * as pgSession from 'connect-pg-simple';
+import session from 'express-session';
+import pgSession from 'connect-pg-simple';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -26,7 +26,7 @@ async function bootstrap() {
   );
 
   // Session middleware
-  const PgSession = pgSession.default ? pgSession.default(session) : pgSession(session);
+  const PgSession = (pgSession as any)(session);
   
   app.use(
     session({

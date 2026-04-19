@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '@/entities/user.entity';
@@ -63,20 +63,24 @@ export class UserService {
   async updatePassword(userId: string, hashedPassword: string): Promise<void> {
     await this.userRepository.update(userId, {
       password: hashedPassword,
-      resetPasswordToken: null,
-      resetPasswordTokenExpiry: null,
+      resetPasswordToken: '' as any,
+      resetPasswordTokenExpiry: null as any,
     });
   }
 
   async updateProfile(userId: string, updateData: Partial<User>): Promise<User> {
     await this.userRepository.update(userId, updateData);
-    return this.findById(userId);
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 
   async verifyEmail(userId: string): Promise<void> {
     await this.userRepository.update(userId, {
       isEmailVerified: true,
-      emailVerificationToken: null,
+      emailVerificationToken: '' as any,
       emailVerifiedAt: new Date(),
     });
   }

@@ -5,22 +5,22 @@ export declare class SupporterController {
     constructor(supporterService: SupporterService);
     create(req: any, createSupporterDto: CreateSupporterDto): Promise<import("../../entities/supporter.entity").Supporter>;
     findAll(skip?: string, take?: string, state?: string, lga?: string, status?: string, search?: string): Promise<{
-        supporters: any;
-        total: any;
+        supporters: import("../../entities/supporter.entity").Supporter[];
+        total: number;
     }>;
     getStatistics(): Promise<{
-        total: any;
-        verified: any;
-        pending: any;
-        rejected: any;
+        total: number;
+        verified: number;
+        pending: number;
+        rejected: number;
         verificationRate: string | number;
     }>;
     getStatisticsByLocation(state: string, lga?: string): Promise<{
         state: string;
         lga: string | null;
-        total: any;
-        verified: any;
-        pending: any;
+        total: number;
+        verified: number;
+        pending: number;
         verificationRate: string | number;
     }>;
     findById(id: string): Promise<import("../../entities/supporter.entity").Supporter>;
