@@ -9,17 +9,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.UserRole = void 0;
+exports.User = void 0;
 const typeorm_1 = require("typeorm");
 const agent_entity_1 = require("./agent.entity");
 const supporter_entity_1 = require("./supporter.entity");
 const activity_log_entity_1 = require("./activity-log.entity");
-var UserRole;
-(function (UserRole) {
-    UserRole["SUPER_ADMIN"] = "super_admin";
-    UserRole["SUPERVISOR"] = "supervisor";
-    UserRole["FIELD_AGENT"] = "field_agent";
-})(UserRole || (exports.UserRole = UserRole = {}));
+const user_role_enum_1 = require("./user-role.enum");
 let User = class User {
 };
 exports.User = User;
@@ -50,8 +45,8 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: UserRole,
-        default: UserRole.FIELD_AGENT,
+        enum: user_role_enum_1.UserRole,
+        default: user_role_enum_1.UserRole.FIELD_AGENT,
     }),
     __metadata("design:type", String)
 ], User.prototype, "role", void 0);

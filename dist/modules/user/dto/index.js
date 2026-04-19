@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerifyEmailDto = exports.UpdateUserDto = exports.CreateUserDto = void 0;
 const class_validator_1 = require("class-validator");
-const user_entity_1 = require("../../../entities/user.entity");
+const user_role_enum_1 = require("../../../entities/user-role.enum");
 class CreateUserDto {
 }
 exports.CreateUserDto = CreateUserDto;
@@ -50,7 +50,7 @@ __decorate([
 ], CreateUserDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(user_entity_1.UserRole),
+    (0, class_validator_1.IsEnum)(user_role_enum_1.UserRole),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
 class UpdateUserDto {

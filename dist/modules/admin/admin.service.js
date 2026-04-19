@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 const agent_entity_1 = require("../../entities/agent.entity");
 const lga_entity_1 = require("../../entities/lga.entity");
 const ward_entity_1 = require("../../entities/ward.entity");
@@ -48,9 +49,9 @@ let AdminService = class AdminService {
     async getUserStats() {
         const [total, superAdmins, supervisors, fieldAgents] = await Promise.all([
             this.userRepository.count(),
-            this.userRepository.count({ where: { role: user_entity_1.UserRole.SUPER_ADMIN } }),
-            this.userRepository.count({ where: { role: user_entity_1.UserRole.SUPERVISOR } }),
-            this.userRepository.count({ where: { role: user_entity_1.UserRole.FIELD_AGENT } }),
+            this.userRepository.count({ where: { role: user_role_enum_1.UserRole.SUPER_ADMIN } }),
+            this.userRepository.count({ where: { role: user_role_enum_1.UserRole.SUPERVISOR } }),
+            this.userRepository.count({ where: { role: user_role_enum_1.UserRole.FIELD_AGENT } }),
         ]);
         return {
             total,

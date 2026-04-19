@@ -18,7 +18,7 @@ const export_service_1 = require("./export.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 let ExportController = class ExportController {
     constructor(exportService) {
         this.exportService = exportService;
@@ -45,7 +45,7 @@ let ExportController = class ExportController {
 exports.ExportController = ExportController;
 __decorate([
     (0, common_1.Get)('supporters-csv'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('state')),
     __param(2, (0, common_1.Query)('lga')),
@@ -56,7 +56,7 @@ __decorate([
 ], ExportController.prototype, "exportSupportersCSV", null);
 __decorate([
     (0, common_1.Get)('agents-csv'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('state')),
     __param(2, (0, common_1.Query)('lga')),
@@ -66,7 +66,7 @@ __decorate([
 ], ExportController.prototype, "exportAgentsCSV", null);
 __decorate([
     (0, common_1.Get)('registrations-csv'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Res)()),
     __param(1, (0, common_1.Query)('agentId')),
     __param(2, (0, common_1.Query)('status')),

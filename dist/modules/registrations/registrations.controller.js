@@ -18,7 +18,7 @@ const registrations_service_1 = require("./registrations.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 let RegistrationController = class RegistrationController {
     constructor(registrationService) {
         this.registrationService = registrationService;
@@ -46,7 +46,7 @@ let RegistrationController = class RegistrationController {
 exports.RegistrationController = RegistrationController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.FIELD_AGENT),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FIELD_AGENT),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -55,14 +55,14 @@ __decorate([
 ], RegistrationController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('statistics'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], RegistrationController.prototype, "getStatistics", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR, user_entity_1.UserRole.FIELD_AGENT),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -70,7 +70,7 @@ __decorate([
 ], RegistrationController.prototype, "findById", null);
 __decorate([
     (0, common_1.Get)('agent/:agentId'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPERVISOR, user_entity_1.UserRole.FIELD_AGENT),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('agentId')),
     __param(1, (0, common_1.Query)('skip')),
     __param(2, (0, common_1.Query)('take')),
@@ -80,7 +80,7 @@ __decorate([
 ], RegistrationController.prototype, "findByAgent", null);
 __decorate([
     (0, common_1.Get)('supporter/:supporterId'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Param)('supporterId')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -88,7 +88,7 @@ __decorate([
 ], RegistrationController.prototype, "findBySupporter", null);
 __decorate([
     (0, common_1.Put)(':id/status'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

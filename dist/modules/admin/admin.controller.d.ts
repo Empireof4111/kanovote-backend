@@ -1,5 +1,5 @@
 import { AdminService } from './admin.service';
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { CreateLgaDto, CreateWardDto, CreatePollingUnitDto, UpdateLgaDto, UpdateWardDto, UpdatePollingUnitDto, UpdateUserRoleDto } from './dto';
 export declare class AdminController {
     private adminService;
@@ -30,7 +30,7 @@ export declare class AdminController {
         };
     }>;
     getAllUsers(skip?: string, take?: string, role?: UserRole): Promise<{
-        users: import("@/entities/user.entity").User[];
+        users: import("../../entities/user.entity").User[];
         total: number;
     }>;
     getUserStats(): Promise<{
@@ -39,9 +39,9 @@ export declare class AdminController {
         supervisors: number;
         fieldAgents: number;
     }>;
-    updateUserRole(userId: string, updateUserRoleDto: UpdateUserRoleDto): Promise<import("@/entities/user.entity").User>;
-    blockUser(userId: string): Promise<import("@/entities/user.entity").User>;
-    unblockUser(userId: string): Promise<import("@/entities/user.entity").User>;
+    updateUserRole(userId: string, updateUserRoleDto: UpdateUserRoleDto): Promise<import("../../entities/user.entity").User>;
+    blockUser(userId: string): Promise<import("../../entities/user.entity").User>;
+    unblockUser(userId: string): Promise<import("../../entities/user.entity").User>;
     getAgentStats(): Promise<{
         total: number;
         active: number;

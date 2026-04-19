@@ -1,4 +1,4 @@
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 export declare const ROLES_KEY = "roles";
 export declare const Roles: (...roles: UserRole[]) => import("@nestjs/common").CustomDecorator<string>;
 //# sourceMappingURL=roles.decorator.d.ts.map

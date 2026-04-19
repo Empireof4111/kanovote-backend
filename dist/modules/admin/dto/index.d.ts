@@ -1,4 +1,4 @@
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 export declare class CreateLgaDto {
     name: string;
     code: string;

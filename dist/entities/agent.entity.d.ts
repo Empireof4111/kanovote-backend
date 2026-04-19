@@ -1,4 +1,5 @@
-import { User, UserRole } from './user.entity';
+import { User } from './user.entity';
+import { UserRole } from './user-role.enum';
 import { Registration } from './registration.entity';
 export declare enum AgentStatus {
     ACTIVE = "active",

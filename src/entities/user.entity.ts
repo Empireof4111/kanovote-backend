@@ -10,12 +10,7 @@ import {
 import { Agent } from './agent.entity';
 import { Supporter } from './supporter.entity';
 import { ActivityLog } from './activity-log.entity';
-
-export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
-  SUPERVISOR = 'supervisor',
-  FIELD_AGENT = 'field_agent',
-}
+import { UserRole } from './user-role.enum';
 
 @Entity('users')
 @Index(['email'], { unique: true })

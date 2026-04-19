@@ -18,7 +18,7 @@ const activity_service_1 = require("./activity.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 const activity_log_entity_1 = require("../../entities/activity-log.entity");
 let ActivityController = class ActivityController {
     constructor(activityService) {
@@ -42,7 +42,7 @@ let ActivityController = class ActivityController {
 exports.ActivityController = ActivityController;
 __decorate([
     (0, common_1.Get)('recent'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -50,7 +50,7 @@ __decorate([
 ], ActivityController.prototype, "getRecentActivity", null);
 __decorate([
     (0, common_1.Get)('audit-log'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Query)('skip')),
     __param(1, (0, common_1.Query)('take')),
     __param(2, (0, common_1.Query)('userId')),
@@ -61,7 +61,7 @@ __decorate([
 ], ActivityController.prototype, "getAuditLog", null);
 __decorate([
     (0, common_1.Get)('user/:userId'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Param)('userId')),
     __param(1, (0, common_1.Query)('skip')),
     __param(2, (0, common_1.Query)('take')),
@@ -71,7 +71,7 @@ __decorate([
 ], ActivityController.prototype, "findByUser", null);
 __decorate([
     (0, common_1.Get)('entity/:entityType/:entityId'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __param(0, (0, common_1.Param)('entityType')),
     __param(1, (0, common_1.Param)('entityId')),
     __metadata("design:type", Function),

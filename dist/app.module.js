@@ -27,6 +27,7 @@ const file_upload_entity_1 = require("./entities/file-upload.entity");
 const lga_entity_1 = require("./entities/lga.entity");
 const ward_entity_1 = require("./entities/ward.entity");
 const polling_unit_entity_1 = require("./entities/polling-unit.entity");
+const isEnabled = (value) => ['true', '1', 'yes', 'on'].includes((value ?? '').toLowerCase());
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -58,8 +59,8 @@ exports.AppModule = AppModule = __decorate([
                         ward_entity_1.Ward,
                         polling_unit_entity_1.PollingUnit,
                     ],
-                    synchronize: configService.get('NODE_ENV') === 'development',
-                    logging: configService.get('NODE_ENV') === 'development',
+                    synchronize: isEnabled(configService.get('DATABASE_SYNCHRONIZE')),
+                    logging: isEnabled(configService.get('DATABASE_LOGGING')),
                     dropSchema: false,
                 }),
             }),

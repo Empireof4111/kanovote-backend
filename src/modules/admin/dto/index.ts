@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsInt, IsEmail, IsEnum } from 'class-validator';
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 
 export class CreateLgaDto {
   @IsString()

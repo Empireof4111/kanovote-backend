@@ -1,5 +1,6 @@
 import { Repository } from 'typeorm';
-import { User, UserRole } from '@/entities/user.entity';
+import { User } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { Agent } from '@/entities/agent.entity';
 import { LocalGovernmentArea } from '@/entities/lga.entity';
 import { Ward } from '@/entities/ward.entity';

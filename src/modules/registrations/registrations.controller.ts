@@ -14,7 +14,7 @@ import { RegistrationService } from './registrations.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { RegistrationStatus } from '@/entities/registration.entity';
 
 @Controller('registrations')

@@ -19,6 +19,9 @@ import { LocalGovernmentArea } from './entities/lga.entity';
 import { Ward } from './entities/ward.entity';
 import { PollingUnit } from './entities/polling-unit.entity';
 
+const isEnabled = (value?: string) =>
+  ['true', '1', 'yes', 'on'].includes((value ?? '').toLowerCase());
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -46,8 +49,10 @@ import { PollingUnit } from './entities/polling-unit.entity';
           Ward,
           PollingUnit,
         ],
-        synchronize: configService.get<string>('NODE_ENV') === 'development',
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        synchronize: isEnabled(
+          configService.get<string>('DATABASE_SYNCHRONIZE'),
+        ),
+        logging: isEnabled(configService.get<string>('DATABASE_LOGGING')),
         dropSchema: false,
       }),
     }),

@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import { Agent, AgentStatus } from '@/entities/agent.entity';
-import { User, UserRole } from '@/entities/user.entity';
+import { User } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
 export declare class AgentService {
     private agentRepository;

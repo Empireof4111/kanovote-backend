@@ -9,6 +9,9 @@ import { FileUpload } from './entities/file-upload.entity';
 
 dotenv.config();
 
+const isEnabled = (value?: string) =>
+  ['true', '1', 'yes', 'on'].includes((value ?? '').toLowerCase());
+
 export const AppDataSource = new DataSource({
   type: 'postgres',
   host: process.env.DATABASE_HOST || 'localhost',
@@ -19,7 +22,7 @@ export const AppDataSource = new DataSource({
   entities: [User, Agent, Supporter, Registration, ActivityLog, FileUpload],
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
-  synchronize: process.env.NODE_ENV === 'development',
-  logging: process.env.NODE_ENV === 'development',
+  synchronize: isEnabled(process.env.DATABASE_SYNCHRONIZE),
+  logging: isEnabled(process.env.DATABASE_LOGGING),
   dropSchema: false,
 });

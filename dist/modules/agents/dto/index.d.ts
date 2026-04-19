@@ -1,4 +1,4 @@
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { AgentStatus } from '@/entities/agent.entity';
 export declare class RegisterAgentDto {
     firstName: string;

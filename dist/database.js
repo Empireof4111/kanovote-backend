@@ -43,6 +43,7 @@ const registration_entity_1 = require("./entities/registration.entity");
 const activity_log_entity_1 = require("./entities/activity-log.entity");
 const file_upload_entity_1 = require("./entities/file-upload.entity");
 dotenv.config();
+const isEnabled = (value) => ['true', '1', 'yes', 'on'].includes((value ?? '').toLowerCase());
 exports.AppDataSource = new typeorm_1.DataSource({
     type: 'postgres',
     host: process.env.DATABASE_HOST || 'localhost',
@@ -53,8 +54,8 @@ exports.AppDataSource = new typeorm_1.DataSource({
     entities: [user_entity_1.User, agent_entity_1.Agent, supporter_entity_1.Supporter, registration_entity_1.Registration, activity_log_entity_1.ActivityLog, file_upload_entity_1.FileUpload],
     migrations: ['src/migrations/*.ts'],
     subscribers: ['src/subscribers/*.ts'],
-    synchronize: process.env.NODE_ENV === 'development',
-    logging: process.env.NODE_ENV === 'development',
+    synchronize: isEnabled(process.env.DATABASE_SYNCHRONIZE),
+    logging: isEnabled(process.env.DATABASE_LOGGING),
     dropSchema: false,
 });
 //# sourceMappingURL=database.js.map

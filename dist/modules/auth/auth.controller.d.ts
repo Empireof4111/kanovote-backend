@@ -11,7 +11,7 @@ export declare class AuthController {
             lastName: string;
             email: string;
             username: string;
-            role: import("../../entities/user.entity").UserRole;
+            role: import("../../entities/user-role.enum").UserRole;
             phone: string;
             isEmailVerified: boolean;
         };
@@ -24,7 +24,7 @@ export declare class AuthController {
             lastName: string;
             email: string;
             username: string;
-            role: import("../../entities/user.entity").UserRole;
+            role: import("../../entities/user-role.enum").UserRole;
             phone: string;
             isEmailVerified: boolean;
         };
@@ -58,7 +58,7 @@ export declare class AuthController {
             lastName: string;
             email: string;
             username: string;
-            role: import("../../entities/user.entity").UserRole;
+            role: import("../../entities/user-role.enum").UserRole;
             phone: string;
             isEmailVerified: boolean;
         };

@@ -9,7 +9,8 @@ import {
   Index,
   JoinColumn,
 } from 'typeorm';
-import { User, UserRole } from './user.entity';
+import { User } from './user.entity';
+import { UserRole } from './user-role.enum';
 import { Registration } from './registration.entity';
 
 export enum AgentStatus {

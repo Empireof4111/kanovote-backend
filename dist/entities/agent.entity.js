@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Agent = exports.AgentStatus = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
+const user_role_enum_1 = require("./user-role.enum");
 const registration_entity_1 = require("./registration.entity");
 var AgentStatus;
 (function (AgentStatus) {
@@ -41,8 +42,8 @@ __decorate([
 __decorate([
     (0, typeorm_1.Column)({
         type: 'enum',
-        enum: user_entity_1.UserRole,
-        default: user_entity_1.UserRole.FIELD_AGENT,
+        enum: user_role_enum_1.UserRole,
+        default: user_role_enum_1.UserRole.FIELD_AGENT,
     }),
     __metadata("design:type", String)
 ], Agent.prototype, "role", void 0);

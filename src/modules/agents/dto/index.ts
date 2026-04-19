@@ -1,6 +1,6 @@
 import { IsString, IsEnum, IsOptional, IsInt, Min, IsEmail, MinLength, Matches } from 'class-validator';
 import { Match } from '@/common/decorators/match.decorator';
-import { UserRole } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { AgentStatus } from '@/entities/agent.entity';
 
 // For creating agents via registration (includes user creation)

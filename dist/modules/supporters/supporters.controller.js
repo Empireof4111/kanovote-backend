@@ -18,7 +18,7 @@ const supporters_service_1 = require("./supporters.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
-const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 const dto_1 = require("./dto");
 let SupporterController = class SupporterController {
     constructor(supporterService) {
@@ -53,7 +53,7 @@ let SupporterController = class SupporterController {
 exports.SupporterController = SupporterController;
 __decorate([
     (0, common_1.Post)(),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.FIELD_AGENT, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FIELD_AGENT, user_role_enum_1.UserRole.SUPERVISOR),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
@@ -63,7 +63,7 @@ __decorate([
 ], SupporterController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
     __param(0, (0, common_1.Query)('skip')),
     __param(1, (0, common_1.Query)('take')),
     __param(2, (0, common_1.Query)('state')),
@@ -76,14 +76,14 @@ __decorate([
 ], SupporterController.prototype, "findAll", null);
 __decorate([
     (0, common_1.Get)('statistics'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], SupporterController.prototype, "getStatistics", null);
 __decorate([
     (0, common_1.Get)('statistics/:state'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
     __param(0, (0, common_1.Param)('state')),
     __param(1, (0, common_1.Query)('lga')),
     __metadata("design:type", Function),
@@ -92,7 +92,7 @@ __decorate([
 ], SupporterController.prototype, "getStatisticsByLocation", null);
 __decorate([
     (0, common_1.Get)(':id'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR, user_entity_1.UserRole.FIELD_AGENT),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -100,7 +100,7 @@ __decorate([
 ], SupporterController.prototype, "findById", null);
 __decorate([
     (0, common_1.Put)(':id'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.FIELD_AGENT, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FIELD_AGENT, user_role_enum_1.UserRole.SUPERVISOR),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -109,7 +109,7 @@ __decorate([
 ], SupporterController.prototype, "update", null);
 __decorate([
     (0, common_1.Put)(':id/verify'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN, user_entity_1.UserRole.SUPERVISOR),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Param)('id')),
     __param(2, (0, common_1.Body)()),
@@ -119,7 +119,7 @@ __decorate([
 ], SupporterController.prototype, "verify", null);
 __decorate([
     (0, common_1.Delete)(':id'),
-    (0, roles_decorator_1.Roles)(user_entity_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),

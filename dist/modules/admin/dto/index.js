@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DashboardStatsDto = exports.UpdateUserRoleDto = exports.UpdatePollingUnitDto = exports.UpdateWardDto = exports.UpdateLgaDto = exports.CreatePollingUnitDto = exports.CreateWardDto = exports.CreateLgaDto = void 0;
 const class_validator_1 = require("class-validator");
-const user_entity_1 = require("../../../entities/user.entity");
+const user_role_enum_1 = require("../../../entities/user-role.enum");
 class CreateLgaDto {
 }
 exports.CreateLgaDto = CreateLgaDto;
@@ -139,7 +139,7 @@ class UpdateUserRoleDto {
 }
 exports.UpdateUserRoleDto = UpdateUserRoleDto;
 __decorate([
-    (0, class_validator_1.IsEnum)(user_entity_1.UserRole),
+    (0, class_validator_1.IsEnum)(user_role_enum_1.UserRole),
     __metadata("design:type", String)
 ], UpdateUserRoleDto.prototype, "role", void 0);
 class DashboardStatsDto {
