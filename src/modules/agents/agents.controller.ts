@@ -25,6 +25,8 @@ export class AgentController {
 
   // Register new agent (with user creation) - accessible without auth
   @Post('register')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async registerAgent(@Body() registerAgentDto: RegisterAgentDto) {
     const result = await this.agentService.registerAgent(registerAgentDto);
