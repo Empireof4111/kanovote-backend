@@ -8,11 +8,20 @@ const common_1 = require("@nestjs/common");
 const express_session_1 = __importDefault(require("express-session"));
 const connect_pg_simple_1 = __importDefault(require("connect-pg-simple"));
 const app_module_1 = require("./app.module");
+const parseOrigins = (value) => (value ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    const allowedOrigins = Array.from(new Set([
+        'http://localhost:3000',
+        'http://localhost:3001',
+        ...parseOrigins(process.env.FRONTEND_URL),
+    ]));
     // Enable CORS
     app.enableCors({
-        origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+        origin: allowedOrigins,
         credentials: true,
     });
     // Global validation pipe

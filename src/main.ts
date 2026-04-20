@@ -4,12 +4,25 @@ import session from 'express-session';
 import pgSession from 'connect-pg-simple';
 import { AppModule } from './app.module';
 
+const parseOrigins = (value?: string) =>
+  (value ?? '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const allowedOrigins = Array.from(
+    new Set([
+      'http://localhost:3000',
+      'http://localhost:3001',
+      ...parseOrigins(process.env.FRONTEND_URL),
+    ]),
+  );
 
   // Enable CORS
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+    origin: allowedOrigins,
     credentials: true,
   });
 
