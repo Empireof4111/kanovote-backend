@@ -25,28 +25,45 @@ export class AgentService {
       where: { email },
     });
 
-    if (existingUser) {
-      throw new ConflictException('User with this email already exists');
-    }
-
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Generate username from email (take part before @)
-    const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
+    let savedUser: User;
 
-    // Create user
-    const user = this.userRepository.create({
-      email,
-      phone,
-      firstName,
-      lastName,
-      username,
-      password: hashedPassword,
-      role: agentData.role as UserRole,
-      isActive: true,
-    });
-    const savedUser = await this.userRepository.save(user);
+    if (existingUser) {
+      const existingAgent = await this.agentRepository.findOne({
+        where: { userId: existingUser.id },
+      });
+
+      if (existingAgent) {
+        throw new ConflictException('User with this email already exists');
+      }
+
+      existingUser.firstName = firstName;
+      existingUser.lastName = lastName;
+      existingUser.phone = phone;
+      existingUser.password = hashedPassword;
+      existingUser.role = agentData.role as UserRole;
+      existingUser.isActive = true;
+
+      savedUser = await this.userRepository.save(existingUser);
+    } else {
+      // Generate username from email (take part before @)
+      const username = email.split('@')[0] + '_' + Math.random().toString(36).substring(7);
+
+      // Create user
+      const user = this.userRepository.create({
+        email,
+        phone,
+        firstName,
+        lastName,
+        username,
+        password: hashedPassword,
+        role: agentData.role as UserRole,
+        isActive: true,
+      });
+      savedUser = await this.userRepository.save(user);
+    }
 
     // Create agent
     const agent = this.agentRepository.create({
