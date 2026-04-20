@@ -34,7 +34,7 @@ __decorate([
 ], CreateSupporterDto.prototype, "phone", void 0);
 __decorate([
     (0, class_validator_1.IsDateString)(),
-    __metadata("design:type", Date)
+    __metadata("design:type", String)
 ], CreateSupporterDto.prototype, "dateOfBirth", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),

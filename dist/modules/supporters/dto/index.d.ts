@@ -4,7 +4,7 @@ export declare class CreateSupporterDto {
     lastName: string;
     email: string;
     phone: string;
-    dateOfBirth: Date;
+    dateOfBirth: string;
     gender: string;
     occupation: string;
     state: string;

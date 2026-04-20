@@ -16,7 +16,7 @@ export class CreateSupporterDto {
   phone: string;
 
   @IsDateString()
-  dateOfBirth: Date;
+  dateOfBirth: string;
 
   @IsString()
   gender: string;
