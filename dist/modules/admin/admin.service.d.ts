@@ -53,6 +53,8 @@ export declare class AdminService {
         verified: number;
         pending: number;
         rejected: number;
+        thisMonth: number;
+        growthRate: number;
     }>;
     getDashboardStats(): Promise<{
         users: {
@@ -72,7 +74,26 @@ export declare class AdminService {
             verified: number;
             pending: number;
             rejected: number;
+            thisMonth: number;
+            growthRate: number;
         };
+        registrationsByMonth: {
+            month: string;
+            registrations: number;
+            target: number;
+        }[];
+        registrationsByLga: {
+            lga: string;
+            count: number;
+        }[];
+        genderDistribution: {
+            gender: string;
+            count: number;
+        }[];
+        ageDistribution: {
+            range: string;
+            count: number;
+        }[];
         geography: {
             lgas: number;
             wards: number;

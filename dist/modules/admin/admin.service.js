@@ -275,17 +275,32 @@ let AdminService = class AdminService {
     }
     // SUPPORTER STATS
     async getSupporterStats() {
-        const [total, verified, pending, rejected] = await Promise.all([
+        const now = new Date();
+        const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const [total, verified, pending, rejected, thisMonth, lastMonth] = await Promise.all([
             this.supporterRepository.count(),
-            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.VERIFIED } }),
-            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.IN_PROGRESS } }),
-            this.registrationRepository.count({ where: { status: registration_entity_1.RegistrationStatus.REJECTED } }),
+            this.supporterRepository.count({ where: { status: supporter_entity_1.VerificationStatus.VERIFIED } }),
+            this.supporterRepository.count({ where: { status: supporter_entity_1.VerificationStatus.PENDING } }),
+            this.supporterRepository.count({ where: { status: supporter_entity_1.VerificationStatus.REJECTED } }),
+            this.supporterRepository
+                .createQueryBuilder('supporter')
+                .where('supporter.registeredAt >= :startOfThisMonth', { startOfThisMonth })
+                .getCount(),
+            this.supporterRepository
+                .createQueryBuilder('supporter')
+                .where('supporter.registeredAt >= :startOfLastMonth', { startOfLastMonth })
+                .andWhere('supporter.registeredAt < :startOfThisMonth', { startOfThisMonth })
+                .getCount(),
         ]);
+        const growthRate = lastMonth > 0 ? Number((((thisMonth - lastMonth) / lastMonth) * 100).toFixed(2)) : 0;
         return {
             total,
             verified,
             pending,
             rejected,
+            thisMonth,
+            growthRate,
         };
     }
     // DASHBOARD STATS
@@ -298,10 +313,69 @@ let AdminService = class AdminService {
             this.wardRepository.count(),
             this.pollingUnitRepository.count(),
         ]);
+        const supporters = await this.supporterRepository.find({
+            order: { registeredAt: 'ASC' },
+        });
+        const lgas = await this.lgaRepository.find();
+        const lgaNameById = new Map(lgas.map((lga) => [lga.id, lga.name]));
+        const registrationsByMonthMap = new Map();
+        const registrationsByLgaMap = new Map();
+        const genderDistributionMap = new Map();
+        const ageDistributionMap = new Map([
+            ['18-25', 0],
+            ['26-35', 0],
+            ['36-45', 0],
+            ['46-55', 0],
+            ['56+', 0],
+        ]);
+        const now = new Date();
+        supporters.forEach((supporter) => {
+            const registeredAt = new Date(supporter.registeredAt);
+            const month = registeredAt.toLocaleString('en-US', { month: 'short' });
+            const monthSortKey = registeredAt.getFullYear() * 12 + registeredAt.getMonth();
+            const existingMonth = registrationsByMonthMap.get(month);
+            registrationsByMonthMap.set(month, {
+                month,
+                registrations: (existingMonth?.registrations || 0) + 1,
+                target: existingMonth?.target || 0,
+                sortKey: monthSortKey,
+            });
+            const lgaName = lgaNameById.get(supporter.lga) || supporter.lga;
+            registrationsByLgaMap.set(lgaName, (registrationsByLgaMap.get(lgaName) || 0) + 1);
+            const gender = supporter.gender?.charAt(0).toUpperCase() + supporter.gender?.slice(1).toLowerCase();
+            genderDistributionMap.set(gender, (genderDistributionMap.get(gender) || 0) + 1);
+            const age = now.getFullYear() - new Date(supporter.dateOfBirth).getFullYear();
+            const range = age <= 25 ? '18-25' : age <= 35 ? '26-35' : age <= 45 ? '36-45' : age <= 55 ? '46-55' : '56+';
+            ageDistributionMap.set(range, (ageDistributionMap.get(range) || 0) + 1);
+        });
+        const registrationsByMonth = Array.from(registrationsByMonthMap.values())
+            .sort((a, b) => a.sortKey - b.sortKey)
+            .slice(-6)
+            .map(({ sortKey, registrations, month }) => ({
+            month,
+            registrations,
+            target: Math.max(registrations, 1),
+        }));
+        const registrationsByLga = Array.from(registrationsByLgaMap.entries())
+            .map(([lga, count]) => ({ lga, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+        const genderDistribution = Array.from(genderDistributionMap.entries()).map(([gender, count]) => ({
+            gender,
+            count,
+        }));
+        const ageDistribution = Array.from(ageDistributionMap.entries()).map(([range, count]) => ({
+            range,
+            count,
+        }));
         return {
             users: userStats,
             agents: agentStats,
             supporters: supporterStats,
+            registrationsByMonth,
+            registrationsByLga,
+            genderDistribution,
+            ageDistribution,
             geography: {
                 lgas: lgaCount,
                 wards: wardCount,
