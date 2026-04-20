@@ -14,6 +14,7 @@ const parseOrigins = (value) => (value ?? '')
     .filter(Boolean);
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
     const allowedOrigins = Array.from(new Set([
         'http://localhost:3000',
         'http://localhost:3001',
@@ -21,8 +22,17 @@ async function bootstrap() {
     ]));
     // Enable CORS
     app.enableCors({
-        origin: allowedOrigins,
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+                return;
+            }
+            callback(new Error(`Origin ${origin} is not allowed by CORS`));
+        },
         credentials: true,
+        methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        optionsSuccessStatus: 204,
     });
     // Global validation pipe
     app.useGlobalPipes(new common_1.ValidationPipe({
