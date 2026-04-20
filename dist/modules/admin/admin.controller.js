@@ -108,6 +108,7 @@ let AdminController = class AdminController {
 exports.AdminController = AdminController;
 __decorate([
     (0, common_1.Get)('dashboard'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -154,6 +155,7 @@ __decorate([
 ], AdminController.prototype, "unblockUser", null);
 __decorate([
     (0, common_1.Get)('agents/stats'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
@@ -168,6 +170,7 @@ __decorate([
 ], AdminController.prototype, "createLga", null);
 __decorate([
     (0, common_1.Get)('locations/lga'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Query)('skip')),
     __param(1, (0, common_1.Query)('take')),
     __metadata("design:type", Function),
@@ -176,6 +179,7 @@ __decorate([
 ], AdminController.prototype, "getAllLgas", null);
 __decorate([
     (0, common_1.Get)('locations/lga/:id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -208,6 +212,7 @@ __decorate([
 ], AdminController.prototype, "createWard", null);
 __decorate([
     (0, common_1.Get)('locations/ward'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Query)('lgaId')),
     __param(1, (0, common_1.Query)('skip')),
     __param(2, (0, common_1.Query)('take')),
@@ -217,6 +222,7 @@ __decorate([
 ], AdminController.prototype, "getAllWards", null);
 __decorate([
     (0, common_1.Get)('locations/ward/:id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -249,6 +255,7 @@ __decorate([
 ], AdminController.prototype, "createPollingUnit", null);
 __decorate([
     (0, common_1.Get)('locations/polling-unit'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Query)('wardId')),
     __param(1, (0, common_1.Query)('lgaId')),
     __param(2, (0, common_1.Query)('skip')),
@@ -259,6 +266,7 @@ __decorate([
 ], AdminController.prototype, "getAllPollingUnits", null);
 __decorate([
     (0, common_1.Get)('locations/polling-unit/:id'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -283,6 +291,7 @@ __decorate([
 ], AdminController.prototype, "deletePollingUnit", null);
 __decorate([
     (0, common_1.Get)('locations/hierarchy'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

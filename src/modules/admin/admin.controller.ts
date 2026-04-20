@@ -34,6 +34,7 @@ export class AdminController {
 
   // DASHBOARD & STATS
   @Get('dashboard')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getDashboard() {
     return this.adminService.getDashboardStats();
   }
@@ -74,6 +75,7 @@ export class AdminController {
 
   // AGENT STATS
   @Get('agents/stats')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getAgentStats() {
     return this.adminService.getAgentStats();
   }
@@ -86,6 +88,7 @@ export class AdminController {
   }
 
   @Get('locations/lga')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getAllLgas(
     @Query('skip') skip: string = '0',
     @Query('take') take: string = '100',
@@ -95,6 +98,7 @@ export class AdminController {
   }
 
   @Get('locations/lga/:id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getLgaById(@Param('id') id: string) {
     return this.adminService.getLgaById(id);
   }
@@ -119,6 +123,7 @@ export class AdminController {
   }
 
   @Get('locations/ward')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getAllWards(
     @Query('lgaId') lgaId?: string,
     @Query('skip') skip: string = '0',
@@ -129,6 +134,7 @@ export class AdminController {
   }
 
   @Get('locations/ward/:id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getWardById(@Param('id') id: string) {
     return this.adminService.getWardById(id);
   }
@@ -153,6 +159,7 @@ export class AdminController {
   }
 
   @Get('locations/polling-unit')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getAllPollingUnits(
     @Query('wardId') wardId?: string,
     @Query('lgaId') lgaId?: string,
@@ -169,6 +176,7 @@ export class AdminController {
   }
 
   @Get('locations/polling-unit/:id')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getPollingUnitById(@Param('id') id: string) {
     return this.adminService.getPollingUnitById(id);
   }
@@ -187,6 +195,7 @@ export class AdminController {
 
   // GET LOCATION HIERARCHY
   @Get('locations/hierarchy')
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getLocationHierarchy() {
     return this.adminService.getLocationHierarchy();
   }
