@@ -4,6 +4,7 @@ import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
 import { LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
 import { User } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -59,11 +60,15 @@ export class AuthService {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+    const existingUsersCount = await this.userService.countAll();
+    const role =
+      existingUsersCount === 0 ? UserRole.SUPER_ADMIN : UserRole.FIELD_AGENT;
 
     // Create user
     const user = await this.userService.create({
       ...registerDto,
       password: hashedPassword,
+      role,
     });
 
     return this.login(user);

@@ -50,6 +50,10 @@ export class UserService {
     });
   }
 
+  async countAll(): Promise<number> {
+    return this.userRepository.count();
+  }
+
   async updateLastLogin(userId: string): Promise<void> {
     await this.userRepository.update(userId, { lastLoginAt: new Date() });
   }

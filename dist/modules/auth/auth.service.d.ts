@@ -2,6 +2,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
 import { RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
 import { User } from '@/entities/user.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { ConfigService } from '@nestjs/config';
 export declare class AuthService {
     private userService;
@@ -17,7 +18,7 @@ export declare class AuthService {
             lastName: string;
             email: string;
             username: string;
-            role: import("../../entities/user-role.enum").UserRole;
+            role: UserRole;
             phone: string;
             isEmailVerified: boolean;
         };
@@ -30,7 +31,7 @@ export declare class AuthService {
             lastName: string;
             email: string;
             username: string;
-            role: import("../../entities/user-role.enum").UserRole;
+            role: UserRole;
             phone: string;
             isEmailVerified: boolean;
         };

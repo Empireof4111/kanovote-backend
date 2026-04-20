@@ -53,6 +53,9 @@ let UserService = class UserService {
             order: { createdAt: 'DESC' },
         });
     }
+    async countAll() {
+        return this.userRepository.count();
+    }
     async updateLastLogin(userId) {
         await this.userRepository.update(userId, { lastLoginAt: new Date() });
     }

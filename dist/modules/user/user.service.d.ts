@@ -11,6 +11,7 @@ export declare class UserService {
     findByUsername(username: string): Promise<User | null>;
     findByResetToken(token: string): Promise<User | null>;
     findAll(skip?: number, take?: number): Promise<[User[], number]>;
+    countAll(): Promise<number>;
     updateLastLogin(userId: string): Promise<void>;
     updateResetToken(userId: string, token: string, expiry: Date): Promise<void>;
     updatePassword(userId: string, hashedPassword: string): Promise<void>;

@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcryptjs"));
 const user_service_1 = require("../user/user.service");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 const config_1 = require("@nestjs/config");
 let AuthService = class AuthService {
     constructor(userService, jwtService, configService) {
@@ -93,10 +94,13 @@ let AuthService = class AuthService {
         }
         // Hash password
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+        const existingUsersCount = await this.userService.countAll();
+        const role = existingUsersCount === 0 ? user_role_enum_1.UserRole.SUPER_ADMIN : user_role_enum_1.UserRole.FIELD_AGENT;
         // Create user
         const user = await this.userService.create({
             ...registerDto,
             password: hashedPassword,
+            role,
         });
         return this.login(user);
     }
