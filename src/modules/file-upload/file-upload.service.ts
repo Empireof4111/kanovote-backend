@@ -2,22 +2,23 @@ import { Injectable, BadRequestException, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { FileUpload, FileType } from '@/entities/file-upload.entity';
-import * as fs from 'fs';
-import * as path from 'path';
+import { Supporter } from '@/entities/supporter.entity';
 import { v4 as uuid } from 'uuid';
+import { v2 as cloudinary } from 'cloudinary';
 
 @Injectable()
 export class FileUploadService {
-  private uploadDir = process.env.FILE_UPLOAD_DIR || './uploads';
-
   constructor(
     @InjectRepository(FileUpload)
     private fileUploadRepository: Repository<FileUpload>,
+    @InjectRepository(Supporter)
+    private supporterRepository: Repository<Supporter>,
   ) {
-    // Create upload directory if it doesn't exist
-    if (!fs.existsSync(this.uploadDir)) {
-      fs.mkdirSync(this.uploadDir, { recursive: true });
-    }
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
   }
 
   async uploadFile(
@@ -33,16 +34,40 @@ export class FileUploadService {
     }
 
     // Validate file type
-    const allowedMimes = ['image/jpeg', 'image/png', 'application/pdf'];
+    const allowedMimes = ['image/jpeg', 'image/png'];
     if (!allowedMimes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Only JPEG, PNG, and PDF are allowed');
+      throw new BadRequestException('Invalid file type. Only JPEG and PNG images are allowed');
     }
 
     try {
-      // Save file to disk
-      const fileName = `${uuid()}-${file.originalname}`;
-      const filePath = path.join(this.uploadDir, fileName);
-      fs.writeFileSync(filePath, file.buffer);
+      if (
+        !process.env.CLOUDINARY_CLOUD_NAME ||
+        !process.env.CLOUDINARY_API_KEY ||
+        !process.env.CLOUDINARY_API_SECRET
+      ) {
+        throw new BadRequestException('Cloudinary is not configured');
+      }
+
+      const publicId = `${process.env.CLOUDINARY_FOLDER || 'kanovote'}/${supporterId}/${uuid()}-${file.originalname}`;
+      const uploadResult = await new Promise<any>((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            public_id: publicId,
+            resource_type: 'image',
+            overwrite: false,
+          },
+          (error, result) => {
+            if (error || !result) {
+              reject(error || new Error('Upload failed'));
+              return;
+            }
+
+            resolve(result);
+          },
+        );
+
+        uploadStream.end(file.buffer);
+      });
 
       // Create database record
       const fileUpload = this.fileUploadRepository.create({
@@ -50,15 +75,24 @@ export class FileUploadService {
         uploadedByUserId,
         fileType,
         fileName: file.originalname,
-        filePath,
+        filePath: uploadResult.public_id,
         mimeType: file.mimetype,
         fileSize: file.size,
-        url: `/uploads/${fileName}`,
+        url: uploadResult.secure_url,
       });
 
-      return this.fileUploadRepository.save(fileUpload);
+      const savedFile = await this.fileUploadRepository.save(fileUpload);
+
+      await this.supporterRepository.update(supporterId, {
+        documentUploaded: true,
+        documentUrl: savedFile.url,
+      });
+
+      return savedFile;
     } catch (error) {
-      throw new BadRequestException('Failed to upload file');
+      throw new BadRequestException(
+        error instanceof Error ? error.message : 'Failed to upload file',
+      );
     }
   }
 
@@ -82,27 +116,39 @@ export class FileUploadService {
   async deleteFile(id: string): Promise<void> {
     const file = await this.findById(id);
 
-    // Delete from disk
-    if (fs.existsSync(file.filePath)) {
-      fs.unlinkSync(file.filePath);
+    if (file.filePath) {
+      await cloudinary.uploader.destroy(file.filePath, {
+        resource_type: 'image',
+      });
     }
 
     // Mark as inactive in database
     file.isActive = false;
     await this.fileUploadRepository.save(file);
+
+    const activeFiles = await this.fileUploadRepository.count({
+      where: { supporterId: file.supporterId, isActive: true },
+    });
+
+    if (activeFiles === 0) {
+      await this.supporterRepository.update(file.supporterId, {
+        documentUploaded: false,
+        documentUrl: null,
+      });
+    }
   }
 
-  async getFileContent(id: string): Promise<Buffer> {
+  async getFileContent(id: string): Promise<string> {
     const file = await this.findById(id);
 
     if (!file.isActive) {
       throw new BadRequestException('File is no longer available');
     }
 
-    if (!fs.existsSync(file.filePath)) {
-      throw new NotFoundException('File not found on disk');
+    if (!file.url) {
+      throw new NotFoundException('File URL not found');
     }
 
-    return fs.readFileSync(file.filePath);
+    return file.url;
   }
 }

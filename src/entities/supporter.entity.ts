@@ -94,7 +94,7 @@ export class Supporter {
   documentUploaded: boolean;
 
   @Column({ type: 'varchar', length: 500, nullable: true })
-  documentUrl: string;
+  documentUrl: string | null;
 
   @CreateDateColumn()
   registeredAt: Date;

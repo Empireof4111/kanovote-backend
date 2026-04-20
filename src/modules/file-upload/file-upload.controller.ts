@@ -59,11 +59,9 @@ export class FileUploadController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
   async downloadFile(@Param('id') id: string, @Res() res: Response) {
     const file = await this.fileUploadService.findById(id);
-    const content = await this.fileUploadService.getFileContent(id);
+    const url = await this.fileUploadService.getFileContent(id);
 
-    res.setHeader('Content-Type', file.mimeType);
-    res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
-    res.send(content);
+    res.redirect(url);
   }
 
   @Get('supporter/:supporterId')

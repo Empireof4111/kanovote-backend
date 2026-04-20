@@ -115,7 +115,7 @@ __decorate([
 ], Supporter.prototype, "documentUploaded", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 500, nullable: true }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], Supporter.prototype, "documentUrl", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),

@@ -27,7 +27,7 @@ export declare class Supporter {
     verifiedByUserId: string;
     verifiedAt: Date;
     documentUploaded: boolean;
-    documentUrl: string;
+    documentUrl: string | null;
     registeredAt: Date;
     updatedAt: Date;
     registrations: Registration[];

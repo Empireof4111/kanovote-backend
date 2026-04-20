@@ -39,10 +39,8 @@ let FileUploadController = class FileUploadController {
     }
     async downloadFile(id, res) {
         const file = await this.fileUploadService.findById(id);
-        const content = await this.fileUploadService.getFileContent(id);
-        res.setHeader('Content-Type', file.mimeType);
-        res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
-        res.send(content);
+        const url = await this.fileUploadService.getFileContent(id);
+        res.redirect(url);
     }
     async getFiles(supporterId) {
         return this.fileUploadService.findBySupporterId(supporterId);
