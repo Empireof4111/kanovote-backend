@@ -1,8 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { Agent } from '@/entities/agent.entity';
 import { FileUpload, FileType } from '@/entities/file-upload.entity';
 import { Supporter } from '@/entities/supporter.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { v4 as uuid } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
 
@@ -13,6 +15,8 @@ export class FileUploadService {
     private fileUploadRepository: Repository<FileUpload>,
     @InjectRepository(Supporter)
     private supporterRepository: Repository<Supporter>,
+    @InjectRepository(Agent)
+    private agentRepository: Repository<Agent>,
   ) {
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -83,10 +87,7 @@ export class FileUploadService {
 
       const savedFile = await this.fileUploadRepository.save(fileUpload);
 
-      await this.supporterRepository.update(supporterId, {
-        documentUploaded: true,
-        documentUrl: savedFile.url,
-      });
+      await this.syncSupporterDocumentState(supporterId);
 
       return savedFile;
     } catch (error) {
@@ -113,6 +114,17 @@ export class FileUploadService {
     });
   }
 
+  async findBySupporterIdForRequester(
+    supporterId: string,
+    requester: { id: string; role: UserRole },
+  ): Promise<FileUpload[]> {
+    if (requester.role === UserRole.SUPERVISOR) {
+      await this.assertSupervisorCanAccessSupporter(requester.id, supporterId);
+    }
+
+    return this.findBySupporterId(supporterId);
+  }
+
   async deleteFile(id: string): Promise<void> {
     const file = await this.findById(id);
 
@@ -126,16 +138,7 @@ export class FileUploadService {
     file.isActive = false;
     await this.fileUploadRepository.save(file);
 
-    const activeFiles = await this.fileUploadRepository.count({
-      where: { supporterId: file.supporterId, isActive: true },
-    });
-
-    if (activeFiles === 0) {
-      await this.supporterRepository.update(file.supporterId, {
-        documentUploaded: false,
-        documentUrl: null,
-      });
-    }
+    await this.syncSupporterDocumentState(file.supporterId);
   }
 
   async getFileContent(id: string): Promise<string> {
@@ -150,5 +153,50 @@ export class FileUploadService {
     }
 
     return file.url;
+  }
+
+  private async syncSupporterDocumentState(supporterId: string): Promise<void> {
+    const activeFiles = await this.fileUploadRepository.find({
+      where: { supporterId, isActive: true },
+      order: { createdAt: 'DESC' },
+    });
+
+    const passportFile = activeFiles.find((file) => file.fileType === FileType.PASSPORT);
+    const primaryImage = passportFile || activeFiles[0] || null;
+
+    await this.supporterRepository.update(supporterId, {
+      documentUploaded: activeFiles.length > 0,
+      documentUrl: primaryImage?.url || null,
+    });
+  }
+
+  private async findSupervisorAgentByUserId(userId: string): Promise<Agent> {
+    const supervisorAgent = await this.agentRepository.findOne({
+      where: { userId, role: UserRole.SUPERVISOR },
+    });
+
+    if (!supervisorAgent) {
+      throw new ForbiddenException('Supervisor profile not found');
+    }
+
+    return supervisorAgent;
+  }
+
+  private async assertSupervisorCanAccessSupporter(supervisorUserId: string, supporterId: string): Promise<void> {
+    const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+
+    const scopedSupporter = await this.supporterRepository
+      .createQueryBuilder('supporter')
+      .innerJoin(Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+      .where('supporter.id = :supporterId', { supporterId })
+      .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: UserRole.FIELD_AGENT })
+      .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+      .getOne();
+
+    if (!scopedSupporter) {
+      throw new ForbiddenException(
+        'You can only access supporter files registered by field agents in your local government area',
+      );
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -117,8 +117,20 @@ export class AgentService {
     });
   }
 
-  async findAll(skip = 0, take = 10, filters?: AgentPerformanceDto) {
+  async findAll(
+    skip = 0,
+    take = 10,
+    filters?: AgentPerformanceDto,
+    requester?: { id: string; role: UserRole },
+  ) {
     const query = this.agentRepository.createQueryBuilder('agent');
+
+    if (requester?.role === UserRole.SUPERVISOR) {
+      const supervisorAgent = await this.findSupervisorAgentByUserId(requester.id);
+      query
+        .andWhere('agent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+        .andWhere('agent.role = :fieldAgentRole', { fieldAgentRole: UserRole.FIELD_AGENT });
+    }
 
     if (filters?.state) {
       query.andWhere('agent.state = :state', { state: filters.state });
@@ -142,6 +154,16 @@ export class AgentService {
       .take(take)
       .orderBy('agent.joinedAt', 'DESC')
       .getManyAndCount();
+  }
+
+  async findByIdForRequester(id: string, requester: { id: string; role: UserRole }): Promise<Agent> {
+    const agent = await this.findById(id);
+
+    if (requester.role === UserRole.SUPERVISOR) {
+      await this.assertSupervisorCanAccessAgent(requester.id, agent);
+    }
+
+    return agent;
   }
 
   async update(id: string, updateAgentDto: UpdateAgentDto): Promise<Agent> {
@@ -239,5 +261,25 @@ export class AgentService {
   async delete(id: string): Promise<void> {
     const agent = await this.findById(id);
     await this.agentRepository.remove(agent);
+  }
+
+  private async findSupervisorAgentByUserId(userId: string): Promise<Agent> {
+    const supervisorAgent = await this.agentRepository.findOne({
+      where: { userId, role: UserRole.SUPERVISOR },
+    });
+
+    if (!supervisorAgent) {
+      throw new ForbiddenException('Supervisor profile not found');
+    }
+
+    return supervisorAgent;
+  }
+
+  private async assertSupervisorCanAccessAgent(supervisorUserId: string, agent: Agent): Promise<void> {
+    const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+
+    if (agent.role !== UserRole.FIELD_AGENT || agent.lga !== supervisorAgent.lga) {
+      throw new ForbiddenException('You can only access field agents in your local government area');
+    }
   }
 }

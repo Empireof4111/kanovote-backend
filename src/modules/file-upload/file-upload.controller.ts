@@ -66,8 +66,8 @@ export class FileUploadController {
 
   @Get('supporter/:supporterId')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
-  async getFiles(@Param('supporterId') supporterId: string) {
-    return this.fileUploadService.findBySupporterId(supporterId);
+  async getFiles(@Request() req: any, @Param('supporterId') supporterId: string) {
+    return this.fileUploadService.findBySupporterIdForRequester(supporterId, req.user);
   }
 
   @Delete(':id')

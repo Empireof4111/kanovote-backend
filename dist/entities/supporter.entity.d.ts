@@ -9,7 +9,7 @@ export declare class Supporter {
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
+    email: string | null;
     phone: string;
     dateOfBirth: Date;
     gender: string;

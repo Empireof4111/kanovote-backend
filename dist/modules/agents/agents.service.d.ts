@@ -14,7 +14,14 @@ export declare class AgentService {
     create(createAgentDto: CreateAgentDto): Promise<Agent>;
     findById(id: string): Promise<Agent>;
     findByUserId(userId: string): Promise<Agent | null>;
-    findAll(skip?: number, take?: number, filters?: AgentPerformanceDto): Promise<[Agent[], number]>;
+    findAll(skip?: number, take?: number, filters?: AgentPerformanceDto, requester?: {
+        id: string;
+        role: UserRole;
+    }): Promise<[Agent[], number]>;
+    findByIdForRequester(id: string, requester: {
+        id: string;
+        role: UserRole;
+    }): Promise<Agent>;
     update(id: string, updateAgentDto: UpdateAgentDto): Promise<Agent>;
     resetPassword(userId: string, resetPasswordDto: ResetPasswordDto): Promise<void>;
     updateRegistrationStats(agentId: string): Promise<void>;
@@ -38,5 +45,7 @@ export declare class AgentService {
     suspend(id: string): Promise<Agent>;
     activate(id: string): Promise<Agent>;
     delete(id: string): Promise<void>;
+    private findSupervisorAgentByUserId;
+    private assertSupervisorCanAccessAgent;
 }
 //# sourceMappingURL=agents.service.d.ts.map

@@ -48,10 +48,10 @@ export class AgentController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
-  async findAll(@Query() query: AgentPerformanceDto) {
+  async findAll(@Request() req: any, @Query() query: AgentPerformanceDto) {
     const skip = query.skip || 0;
     const take = query.take || 10;
-    const [agents, total] = await this.agentService.findAll(skip, take, query);
+    const [agents, total] = await this.agentService.findAll(skip, take, query, req.user);
     return { agents, total };
   }
 
@@ -67,16 +67,17 @@ export class AgentController {
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
-  async findById(@Param('id') id: string) {
-    return this.agentService.findById(id);
+  async findById(@Request() req: any, @Param('id') id: string) {
+    return this.agentService.findByIdForRequester(id, req.user);
   }
 
   // Get agent performance report
   @Get(':id/performance')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
-  async getPerformanceReport(@Param('id') id: string) {
-    return this.agentService.getPerformanceReport(id);
+  async getPerformanceReport(@Request() req: any, @Param('id') id: string) {
+    const agent = await this.agentService.findByIdForRequester(id, req.user);
+    return this.agentService.getPerformanceReport(agent.id);
   }
 
   // Update agent details

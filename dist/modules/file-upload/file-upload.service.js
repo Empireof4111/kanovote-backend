@@ -16,14 +16,17 @@ exports.FileUploadService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const agent_entity_1 = require("../../entities/agent.entity");
 const file_upload_entity_1 = require("../../entities/file-upload.entity");
 const supporter_entity_1 = require("../../entities/supporter.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 const uuid_1 = require("uuid");
 const cloudinary_1 = require("cloudinary");
 let FileUploadService = class FileUploadService {
-    constructor(fileUploadRepository, supporterRepository) {
+    constructor(fileUploadRepository, supporterRepository, agentRepository) {
         this.fileUploadRepository = fileUploadRepository;
         this.supporterRepository = supporterRepository;
+        this.agentRepository = agentRepository;
         cloudinary_1.v2.config({
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
             api_key: process.env.CLOUDINARY_API_KEY,
@@ -74,10 +77,7 @@ let FileUploadService = class FileUploadService {
                 url: uploadResult.secure_url,
             });
             const savedFile = await this.fileUploadRepository.save(fileUpload);
-            await this.supporterRepository.update(supporterId, {
-                documentUploaded: true,
-                documentUrl: savedFile.url,
-            });
+            await this.syncSupporterDocumentState(supporterId);
             return savedFile;
         }
         catch (error) {
@@ -97,6 +97,12 @@ let FileUploadService = class FileUploadService {
             order: { createdAt: 'DESC' },
         });
     }
+    async findBySupporterIdForRequester(supporterId, requester) {
+        if (requester.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            await this.assertSupervisorCanAccessSupporter(requester.id, supporterId);
+        }
+        return this.findBySupporterId(supporterId);
+    }
     async deleteFile(id) {
         const file = await this.findById(id);
         if (file.filePath) {
@@ -107,15 +113,7 @@ let FileUploadService = class FileUploadService {
         // Mark as inactive in database
         file.isActive = false;
         await this.fileUploadRepository.save(file);
-        const activeFiles = await this.fileUploadRepository.count({
-            where: { supporterId: file.supporterId, isActive: true },
-        });
-        if (activeFiles === 0) {
-            await this.supporterRepository.update(file.supporterId, {
-                documentUploaded: false,
-                documentUrl: null,
-            });
-        }
+        await this.syncSupporterDocumentState(file.supporterId);
     }
     async getFileContent(id) {
         const file = await this.findById(id);
@@ -127,13 +125,49 @@ let FileUploadService = class FileUploadService {
         }
         return file.url;
     }
+    async syncSupporterDocumentState(supporterId) {
+        const activeFiles = await this.fileUploadRepository.find({
+            where: { supporterId, isActive: true },
+            order: { createdAt: 'DESC' },
+        });
+        const passportFile = activeFiles.find((file) => file.fileType === file_upload_entity_1.FileType.PASSPORT);
+        const primaryImage = passportFile || activeFiles[0] || null;
+        await this.supporterRepository.update(supporterId, {
+            documentUploaded: activeFiles.length > 0,
+            documentUrl: primaryImage?.url || null,
+        });
+    }
+    async findSupervisorAgentByUserId(userId) {
+        const supervisorAgent = await this.agentRepository.findOne({
+            where: { userId, role: user_role_enum_1.UserRole.SUPERVISOR },
+        });
+        if (!supervisorAgent) {
+            throw new common_1.ForbiddenException('Supervisor profile not found');
+        }
+        return supervisorAgent;
+    }
+    async assertSupervisorCanAccessSupporter(supervisorUserId, supporterId) {
+        const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+        const scopedSupporter = await this.supporterRepository
+            .createQueryBuilder('supporter')
+            .innerJoin(agent_entity_1.Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+            .where('supporter.id = :supporterId', { supporterId })
+            .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT })
+            .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+            .getOne();
+        if (!scopedSupporter) {
+            throw new common_1.ForbiddenException('You can only access supporter files registered by field agents in your local government area');
+        }
+    }
 };
 exports.FileUploadService = FileUploadService;
 exports.FileUploadService = FileUploadService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(file_upload_entity_1.FileUpload)),
     __param(1, (0, typeorm_1.InjectRepository)(supporter_entity_1.Supporter)),
+    __param(2, (0, typeorm_1.InjectRepository)(agent_entity_1.Agent)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], FileUploadService);
 //# sourceMappingURL=file-upload.service.js.map

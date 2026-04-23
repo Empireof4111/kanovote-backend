@@ -9,7 +9,7 @@ export declare class FileUploadController {
     }): Promise<import("@/entities/file-upload.entity").FileUpload>;
     getFile(id: string): Promise<import("@/entities/file-upload.entity").FileUpload>;
     downloadFile(id: string, res: Response): Promise<void>;
-    getFiles(supporterId: string): Promise<import("@/entities/file-upload.entity").FileUpload[]>;
+    getFiles(req: any, supporterId: string): Promise<import("@/entities/file-upload.entity").FileUpload[]>;
     deleteFile(id: string): Promise<void>;
 }
 //# sourceMappingURL=file-upload.controller.d.ts.map

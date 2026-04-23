@@ -30,13 +30,13 @@ export declare class AgentController {
         };
     }>;
     create(createAgentDto: CreateAgentDto): Promise<import("../../entities/agent.entity").Agent>;
-    findAll(query: AgentPerformanceDto): Promise<{
+    findAll(req: any, query: AgentPerformanceDto): Promise<{
         agents: import("../../entities/agent.entity").Agent[];
         total: number;
     }>;
     findByUserId(userId: string): Promise<import("../../entities/agent.entity").Agent | null>;
-    findById(id: string): Promise<import("../../entities/agent.entity").Agent>;
-    getPerformanceReport(id: string): Promise<{
+    findById(req: any, id: string): Promise<import("../../entities/agent.entity").Agent>;
+    getPerformanceReport(req: any, id: string): Promise<{
         agentId: string;
         agentName: string;
         role: UserRole;

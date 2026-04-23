@@ -4,7 +4,7 @@ export declare class SupporterController {
     private supporterService;
     constructor(supporterService: SupporterService);
     create(req: any, createSupporterDto: CreateSupporterDto): Promise<import("../../entities/supporter.entity").Supporter>;
-    findAll(skip?: string, take?: string, state?: string, lga?: string, status?: string, search?: string): Promise<{
+    findAll(req: any, skip?: string, take?: string, state?: string, lga?: string, status?: string, search?: string): Promise<{
         supporters: import("../../entities/supporter.entity").Supporter[];
         total: number;
     }>;
@@ -23,7 +23,7 @@ export declare class SupporterController {
         pending: number;
         verificationRate: string | number;
     }>;
-    findById(id: string): Promise<import("../../entities/supporter.entity").Supporter>;
+    findById(req: any, id: string): Promise<import("../../entities/supporter.entity").Supporter>;
     update(id: string, updateSupporterDto: UpdateSupporterDto): Promise<import("../../entities/supporter.entity").Supporter>;
     verify(req: any, id: string, verifySupporterDto: VerifySupporterDto): Promise<import("../../entities/supporter.entity").Supporter>;
     delete(id: string): Promise<void>;

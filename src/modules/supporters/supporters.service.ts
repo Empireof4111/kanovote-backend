@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, ILike } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
+import { Agent } from '@/entities/agent.entity';
 import { Supporter, VerificationStatus } from '@/entities/supporter.entity';
+import { UserRole } from '@/entities/user-role.enum';
 import { CreateSupporterDto, UpdateSupporterDto, VerifySupporterDto } from './dto';
 
 @Injectable()
@@ -9,23 +11,49 @@ export class SupporterService {
   constructor(
     @InjectRepository(Supporter)
     private supporterRepository: Repository<Supporter>,
+    @InjectRepository(Agent)
+    private agentRepository: Repository<Agent>,
   ) {}
 
   async create(createSupporterDto: CreateSupporterDto, registeredByUserId: string): Promise<Supporter> {
-    // Check if supporter with same email or voter card already exists
+    const normalizedEmail = createSupporterDto.email?.trim().toLowerCase() || null;
+    const normalizedPhone = createSupporterDto.phone.trim();
+    const normalizedVoterCardNumber = createSupporterDto.voterCardNumber.trim();
+
+    const duplicateConditions: FindOptionsWhere<Supporter>[] = [
+      { phone: normalizedPhone },
+      { voterCardNumber: normalizedVoterCardNumber },
+    ];
+
+    if (normalizedEmail) {
+      duplicateConditions.push({ email: normalizedEmail });
+    }
+
     const existingSupporter = await this.supporterRepository.findOne({
-      where: [
-        { email: createSupporterDto.email },
-        { voterCardNumber: createSupporterDto.voterCardNumber },
-      ],
+      where: duplicateConditions,
     });
 
     if (existingSupporter) {
-      throw new BadRequestException('Supporter with this email or voter card number already exists');
+      if (existingSupporter.phone === normalizedPhone) {
+        throw new BadRequestException('This phone number has already been used to register a supporter');
+      }
+
+      if (normalizedEmail && existingSupporter.email === normalizedEmail) {
+        throw new BadRequestException('Supporter with this email already exists');
+      }
+
+      if (existingSupporter.voterCardNumber === normalizedVoterCardNumber) {
+        throw new BadRequestException('Supporter with this voter card number already exists');
+      }
+
+      throw new BadRequestException('Supporter already exists');
     }
 
     const supporter = this.supporterRepository.create({
       ...createSupporterDto,
+      email: normalizedEmail,
+      phone: normalizedPhone,
+      voterCardNumber: normalizedVoterCardNumber,
       registeredByUserId,
     });
 
@@ -54,8 +82,17 @@ export class SupporterService {
       status?: VerificationStatus;
       search?: string;
     },
+    requester?: { id: string; role: UserRole },
   ) {
     const query = this.supporterRepository.createQueryBuilder('supporter');
+
+    if (requester?.role === UserRole.SUPERVISOR) {
+      const supervisorAgent = await this.findSupervisorAgentByUserId(requester.id);
+      query
+        .innerJoin(Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+        .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: UserRole.FIELD_AGENT })
+        .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga });
+    }
 
     if (filters?.state) {
       query.andWhere('supporter.state = :state', { state: filters.state });
@@ -71,7 +108,7 @@ export class SupporterService {
 
     if (filters?.search) {
       query.andWhere(
-        '(supporter.firstName ILIKE :search OR supporter.lastName ILIKE :search OR supporter.email ILIKE :search)',
+        '(supporter.firstName ILIKE :search OR supporter.lastName ILIKE :search OR COALESCE(supporter.email, \'\') ILIKE :search OR supporter.phone ILIKE :search)',
         { search: `%${filters.search}%` },
       );
     }
@@ -101,6 +138,28 @@ export class SupporterService {
     supporter.verifiedAt = new Date();
 
     return this.supporterRepository.save(supporter);
+  }
+
+  async findByIdForRequester(id: string, requester: { id: string; role: UserRole }): Promise<Supporter> {
+    const supporter = await this.findById(id);
+
+    if (requester.role === UserRole.SUPERVISOR) {
+      await this.assertSupervisorCanAccessSupporter(requester.id, supporter.id);
+    }
+
+    return supporter;
+  }
+
+  async verifyForRequester(
+    id: string,
+    verifySupporterDto: VerifySupporterDto,
+    requester: { id: string; role: UserRole },
+  ): Promise<Supporter> {
+    if (requester.role === UserRole.SUPERVISOR) {
+      await this.assertSupervisorCanAccessSupporter(requester.id, id);
+    }
+
+    return this.verify(id, verifySupporterDto, requester.id);
   }
 
   async getStatistics() {
@@ -147,5 +206,35 @@ export class SupporterService {
   async delete(id: string): Promise<void> {
     const supporter = await this.findById(id);
     await this.supporterRepository.remove(supporter);
+  }
+
+  private async findSupervisorAgentByUserId(userId: string): Promise<Agent> {
+    const supervisorAgent = await this.agentRepository.findOne({
+      where: { userId, role: UserRole.SUPERVISOR },
+    });
+
+    if (!supervisorAgent) {
+      throw new ForbiddenException('Supervisor profile not found');
+    }
+
+    return supervisorAgent;
+  }
+
+  private async assertSupervisorCanAccessSupporter(supervisorUserId: string, supporterId: string): Promise<void> {
+    const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+
+    const scopedSupporter = await this.supporterRepository
+      .createQueryBuilder('supporter')
+      .innerJoin(Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+      .where('supporter.id = :supporterId', { supporterId })
+      .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: UserRole.FIELD_AGENT })
+      .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+      .getOne();
+
+    if (!scopedSupporter) {
+      throw new ForbiddenException(
+        'You can only access supporters registered by field agents in your local government area',
+      );
+    }
   }
 }

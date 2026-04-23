@@ -16,24 +16,45 @@ exports.SupporterService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
+const agent_entity_1 = require("../../entities/agent.entity");
 const supporter_entity_1 = require("../../entities/supporter.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 let SupporterService = class SupporterService {
-    constructor(supporterRepository) {
+    constructor(supporterRepository, agentRepository) {
         this.supporterRepository = supporterRepository;
+        this.agentRepository = agentRepository;
     }
     async create(createSupporterDto, registeredByUserId) {
-        // Check if supporter with same email or voter card already exists
+        const normalizedEmail = createSupporterDto.email?.trim().toLowerCase() || null;
+        const normalizedPhone = createSupporterDto.phone.trim();
+        const normalizedVoterCardNumber = createSupporterDto.voterCardNumber.trim();
+        const duplicateConditions = [
+            { phone: normalizedPhone },
+            { voterCardNumber: normalizedVoterCardNumber },
+        ];
+        if (normalizedEmail) {
+            duplicateConditions.push({ email: normalizedEmail });
+        }
         const existingSupporter = await this.supporterRepository.findOne({
-            where: [
-                { email: createSupporterDto.email },
-                { voterCardNumber: createSupporterDto.voterCardNumber },
-            ],
+            where: duplicateConditions,
         });
         if (existingSupporter) {
-            throw new common_1.BadRequestException('Supporter with this email or voter card number already exists');
+            if (existingSupporter.phone === normalizedPhone) {
+                throw new common_1.BadRequestException('This phone number has already been used to register a supporter');
+            }
+            if (normalizedEmail && existingSupporter.email === normalizedEmail) {
+                throw new common_1.BadRequestException('Supporter with this email already exists');
+            }
+            if (existingSupporter.voterCardNumber === normalizedVoterCardNumber) {
+                throw new common_1.BadRequestException('Supporter with this voter card number already exists');
+            }
+            throw new common_1.BadRequestException('Supporter already exists');
         }
         const supporter = this.supporterRepository.create({
             ...createSupporterDto,
+            email: normalizedEmail,
+            phone: normalizedPhone,
+            voterCardNumber: normalizedVoterCardNumber,
             registeredByUserId,
         });
         return this.supporterRepository.save(supporter);
@@ -48,8 +69,15 @@ let SupporterService = class SupporterService {
         }
         return supporter;
     }
-    async findAll(skip = 0, take = 10, filters) {
+    async findAll(skip = 0, take = 10, filters, requester) {
         const query = this.supporterRepository.createQueryBuilder('supporter');
+        if (requester?.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            const supervisorAgent = await this.findSupervisorAgentByUserId(requester.id);
+            query
+                .innerJoin(agent_entity_1.Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+                .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT })
+                .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga });
+        }
         if (filters?.state) {
             query.andWhere('supporter.state = :state', { state: filters.state });
         }
@@ -60,7 +88,7 @@ let SupporterService = class SupporterService {
             query.andWhere('supporter.status = :status', { status: filters.status });
         }
         if (filters?.search) {
-            query.andWhere('(supporter.firstName ILIKE :search OR supporter.lastName ILIKE :search OR supporter.email ILIKE :search)', { search: `%${filters.search}%` });
+            query.andWhere('(supporter.firstName ILIKE :search OR supporter.lastName ILIKE :search OR COALESCE(supporter.email, \'\') ILIKE :search OR supporter.phone ILIKE :search)', { search: `%${filters.search}%` });
         }
         return query
             .leftJoinAndSelect('supporter.registeredByUser', 'user')
@@ -81,6 +109,19 @@ let SupporterService = class SupporterService {
         supporter.verifiedByUserId = verifiedByUserId;
         supporter.verifiedAt = new Date();
         return this.supporterRepository.save(supporter);
+    }
+    async findByIdForRequester(id, requester) {
+        const supporter = await this.findById(id);
+        if (requester.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            await this.assertSupervisorCanAccessSupporter(requester.id, supporter.id);
+        }
+        return supporter;
+    }
+    async verifyForRequester(id, verifySupporterDto, requester) {
+        if (requester.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            await this.assertSupervisorCanAccessSupporter(requester.id, id);
+        }
+        return this.verify(id, verifySupporterDto, requester.id);
     }
     async getStatistics() {
         const [total, verified, pending, rejected] = await Promise.all([
@@ -121,11 +162,35 @@ let SupporterService = class SupporterService {
         const supporter = await this.findById(id);
         await this.supporterRepository.remove(supporter);
     }
+    async findSupervisorAgentByUserId(userId) {
+        const supervisorAgent = await this.agentRepository.findOne({
+            where: { userId, role: user_role_enum_1.UserRole.SUPERVISOR },
+        });
+        if (!supervisorAgent) {
+            throw new common_1.ForbiddenException('Supervisor profile not found');
+        }
+        return supervisorAgent;
+    }
+    async assertSupervisorCanAccessSupporter(supervisorUserId, supporterId) {
+        const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+        const scopedSupporter = await this.supporterRepository
+            .createQueryBuilder('supporter')
+            .innerJoin(agent_entity_1.Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+            .where('supporter.id = :supporterId', { supporterId })
+            .andWhere('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT })
+            .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+            .getOne();
+        if (!scopedSupporter) {
+            throw new common_1.ForbiddenException('You can only access supporters registered by field agents in your local government area');
+        }
+    }
 };
 exports.SupporterService = SupporterService;
 exports.SupporterService = SupporterService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(supporter_entity_1.Supporter)),
-    __metadata("design:paramtypes", [typeorm_2.Repository])
+    __param(1, (0, typeorm_1.InjectRepository)(agent_entity_1.Agent)),
+    __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository])
 ], SupporterService);
 //# sourceMappingURL=supporters.service.js.map

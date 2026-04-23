@@ -35,11 +35,11 @@ __decorate([
     __metadata("design:type", String)
 ], Supporter.prototype, "lastName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 255, unique: true }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, unique: true, nullable: true }),
+    __metadata("design:type", Object)
 ], Supporter.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', length: 20 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, unique: true }),
     __metadata("design:type", String)
 ], Supporter.prototype, "phone", void 0);
 __decorate([
@@ -132,6 +132,7 @@ __decorate([
 exports.Supporter = Supporter = __decorate([
     (0, typeorm_1.Entity)('supporters'),
     (0, typeorm_1.Index)(['email'], { unique: true }),
+    (0, typeorm_1.Index)(['phone'], { unique: true }),
     (0, typeorm_1.Index)(['voterCardNumber']),
     (0, typeorm_1.Index)(['state', 'lga', 'ward'])
 ], Supporter);

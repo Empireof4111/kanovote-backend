@@ -36,10 +36,10 @@ let AgentController = class AgentController {
         return this.agentService.create(createAgentDto);
     }
     // Get all agents - Super Admin and Supervisor
-    async findAll(query) {
+    async findAll(req, query) {
         const skip = query.skip || 0;
         const take = query.take || 10;
-        const [agents, total] = await this.agentService.findAll(skip, take, query);
+        const [agents, total] = await this.agentService.findAll(skip, take, query, req.user);
         return { agents, total };
     }
     // Get agent by user ID
@@ -47,12 +47,13 @@ let AgentController = class AgentController {
         return this.agentService.findByUserId(userId);
     }
     // Get specific agent by ID
-    async findById(id) {
-        return this.agentService.findById(id);
+    async findById(req, id) {
+        return this.agentService.findByIdForRequester(id, req.user);
     }
     // Get agent performance report
-    async getPerformanceReport(id) {
-        return this.agentService.getPerformanceReport(id);
+    async getPerformanceReport(req, id) {
+        const agent = await this.agentService.findByIdForRequester(id, req.user);
+        return this.agentService.getPerformanceReport(agent.id);
     }
     // Update agent details
     async update(id, updateAgentDto) {
@@ -107,9 +108,10 @@ __decorate([
     (0, common_1.Get)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
-    __param(0, (0, common_1.Query)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.AgentPerformanceDto]),
+    __metadata("design:paramtypes", [Object, dto_1.AgentPerformanceDto]),
     __metadata("design:returntype", Promise)
 ], AgentController.prototype, "findAll", null);
 __decorate([
@@ -125,18 +127,20 @@ __decorate([
     (0, common_1.Get)(':id'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], AgentController.prototype, "findById", null);
 __decorate([
     (0, common_1.Get)(':id/performance'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], AgentController.prototype, "getPerformanceReport", null);
 __decorate([

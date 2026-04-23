@@ -52,6 +52,7 @@ const typeorm_2 = require("typeorm");
 const bcrypt = __importStar(require("bcryptjs"));
 const agent_entity_1 = require("../../entities/agent.entity");
 const user_entity_1 = require("../../entities/user.entity");
+const user_role_enum_1 = require("../../entities/user-role.enum");
 let AgentService = class AgentService {
     constructor(agentRepository, userRepository) {
         this.agentRepository = agentRepository;
@@ -139,8 +140,14 @@ let AgentService = class AgentService {
             relations: ['user', 'registrations'],
         });
     }
-    async findAll(skip = 0, take = 10, filters) {
+    async findAll(skip = 0, take = 10, filters, requester) {
         const query = this.agentRepository.createQueryBuilder('agent');
+        if (requester?.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            const supervisorAgent = await this.findSupervisorAgentByUserId(requester.id);
+            query
+                .andWhere('agent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga })
+                .andWhere('agent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT });
+        }
         if (filters?.state) {
             query.andWhere('agent.state = :state', { state: filters.state });
         }
@@ -159,6 +166,13 @@ let AgentService = class AgentService {
             .take(take)
             .orderBy('agent.joinedAt', 'DESC')
             .getManyAndCount();
+    }
+    async findByIdForRequester(id, requester) {
+        const agent = await this.findById(id);
+        if (requester.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            await this.assertSupervisorCanAccessAgent(requester.id, agent);
+        }
+        return agent;
     }
     async update(id, updateAgentDto) {
         const agent = await this.findById(id);
@@ -240,6 +254,21 @@ let AgentService = class AgentService {
     async delete(id) {
         const agent = await this.findById(id);
         await this.agentRepository.remove(agent);
+    }
+    async findSupervisorAgentByUserId(userId) {
+        const supervisorAgent = await this.agentRepository.findOne({
+            where: { userId, role: user_role_enum_1.UserRole.SUPERVISOR },
+        });
+        if (!supervisorAgent) {
+            throw new common_1.ForbiddenException('Supervisor profile not found');
+        }
+        return supervisorAgent;
+    }
+    async assertSupervisorCanAccessAgent(supervisorUserId, agent) {
+        const supervisorAgent = await this.findSupervisorAgentByUserId(supervisorUserId);
+        if (agent.role !== user_role_enum_1.UserRole.FIELD_AGENT || agent.lga !== supervisorAgent.lga) {
+            throw new common_1.ForbiddenException('You can only access field agents in your local government area');
+        }
     }
 };
 exports.AgentService = AgentService;

@@ -20,6 +20,7 @@ export enum VerificationStatus {
 
 @Entity('supporters')
 @Index(['email'], { unique: true })
+@Index(['phone'], { unique: true })
 @Index(['voterCardNumber'])
 @Index(['state', 'lga', 'ward'])
 export class Supporter {
@@ -32,10 +33,10 @@ export class Supporter {
   @Column({ type: 'varchar', length: 255 })
   lastName: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  email: string;
+  @Column({ type: 'varchar', length: 255, unique: true, nullable: true })
+  email: string | null;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ type: 'varchar', length: 20, unique: true })
   phone: string;
 
   @Column({ type: 'date' })

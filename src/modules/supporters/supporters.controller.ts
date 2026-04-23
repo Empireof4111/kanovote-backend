@@ -34,6 +34,7 @@ export class SupporterController {
   @Get()
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
   async findAll(
+    @Request() req: any,
     @Query('skip') skip: string = '0',
     @Query('take') take: string = '10',
     @Query('state') state?: string,
@@ -45,6 +46,7 @@ export class SupporterController {
       parseInt(skip),
       parseInt(take),
       { state, lga, status: status as any, search },
+      req.user,
     );
     return { supporters, total };
   }
@@ -66,7 +68,15 @@ export class SupporterController {
 
   @Get(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
-  async findById(@Param('id') id: string) {
+  async findById(@Request() req: any, @Param('id') id: string) {
+    if (req.user.role === UserRole.SUPER_ADMIN) {
+      return this.supporterService.findById(id);
+    }
+
+    if (req.user.role === UserRole.SUPERVISOR) {
+      return this.supporterService.findByIdForRequester(id, req.user);
+    }
+
     return this.supporterService.findById(id);
   }
 
@@ -79,7 +89,7 @@ export class SupporterController {
   @Put(':id/verify')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
   async verify(@Request() req: any, @Param('id') id: string, @Body() verifySupporterDto: VerifySupporterDto) {
-    return this.supporterService.verify(id, verifySupporterDto, req.user.id);
+    return this.supporterService.verifyForRequester(id, verifySupporterDto, req.user);
   }
 
   @Delete(':id')

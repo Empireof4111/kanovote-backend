@@ -42,8 +42,8 @@ let FileUploadController = class FileUploadController {
         const url = await this.fileUploadService.getFileContent(id);
         res.redirect(url);
     }
-    async getFiles(supporterId) {
-        return this.fileUploadService.findBySupporterId(supporterId);
+    async getFiles(req, supporterId) {
+        return this.fileUploadService.findBySupporterIdForRequester(supporterId, req.user);
     }
     async deleteFile(id) {
         await this.fileUploadService.deleteFile(id);
@@ -83,9 +83,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)('supporter/:supporterId'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
-    __param(0, (0, common_1.Param)('supporterId')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('supporterId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], FileUploadController.prototype, "getFiles", null);
 __decorate([

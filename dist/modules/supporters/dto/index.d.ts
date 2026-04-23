@@ -2,7 +2,7 @@ import { VerificationStatus } from '@/entities/supporter.entity';
 export declare class CreateSupporterDto {
     firstName: string;
     lastName: string;
-    email: string;
+    email?: string;
     phone: string;
     dateOfBirth: string;
     gender: string;

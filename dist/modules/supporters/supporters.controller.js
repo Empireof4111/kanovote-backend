@@ -27,8 +27,8 @@ let SupporterController = class SupporterController {
     async create(req, createSupporterDto) {
         return this.supporterService.create(createSupporterDto, req.user.id);
     }
-    async findAll(skip = '0', take = '10', state, lga, status, search) {
-        const [supporters, total] = await this.supporterService.findAll(parseInt(skip), parseInt(take), { state, lga, status: status, search });
+    async findAll(req, skip = '0', take = '10', state, lga, status, search) {
+        const [supporters, total] = await this.supporterService.findAll(parseInt(skip), parseInt(take), { state, lga, status: status, search }, req.user);
         return { supporters, total };
     }
     async getStatistics() {
@@ -37,14 +37,20 @@ let SupporterController = class SupporterController {
     async getStatisticsByLocation(state, lga) {
         return this.supporterService.getStatisticsByLocation(state, lga);
     }
-    async findById(id) {
+    async findById(req, id) {
+        if (req.user.role === user_role_enum_1.UserRole.SUPER_ADMIN) {
+            return this.supporterService.findById(id);
+        }
+        if (req.user.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            return this.supporterService.findByIdForRequester(id, req.user);
+        }
         return this.supporterService.findById(id);
     }
     async update(id, updateSupporterDto) {
         return this.supporterService.update(id, updateSupporterDto);
     }
     async verify(req, id, verifySupporterDto) {
-        return this.supporterService.verify(id, verifySupporterDto, req.user.id);
+        return this.supporterService.verifyForRequester(id, verifySupporterDto, req.user);
     }
     async delete(id) {
         await this.supporterService.delete(id);
@@ -64,14 +70,15 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
-    __param(0, (0, common_1.Query)('skip')),
-    __param(1, (0, common_1.Query)('take')),
-    __param(2, (0, common_1.Query)('state')),
-    __param(3, (0, common_1.Query)('lga')),
-    __param(4, (0, common_1.Query)('status')),
-    __param(5, (0, common_1.Query)('search')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('skip')),
+    __param(2, (0, common_1.Query)('take')),
+    __param(3, (0, common_1.Query)('state')),
+    __param(4, (0, common_1.Query)('lga')),
+    __param(5, (0, common_1.Query)('status')),
+    __param(6, (0, common_1.Query)('search')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String, String]),
+    __metadata("design:paramtypes", [Object, String, String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SupporterController.prototype, "findAll", null);
 __decorate([
@@ -93,9 +100,10 @@ __decorate([
 __decorate([
     (0, common_1.Get)(':id'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
-    __param(0, (0, common_1.Param)('id')),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], SupporterController.prototype, "findById", null);
 __decorate([

@@ -8,8 +8,9 @@ export class CreateSupporterDto {
   @IsString()
   lastName: string;
 
+  @IsOptional()
   @IsEmail()
-  email: string;
+  email?: string;
 
   @IsString()
   @IsPhoneNumber('NG')
