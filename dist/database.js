@@ -42,6 +42,9 @@ const supporter_entity_1 = require("./entities/supporter.entity");
 const registration_entity_1 = require("./entities/registration.entity");
 const activity_log_entity_1 = require("./entities/activity-log.entity");
 const file_upload_entity_1 = require("./entities/file-upload.entity");
+const lga_entity_1 = require("./entities/lga.entity");
+const ward_entity_1 = require("./entities/ward.entity");
+const polling_unit_entity_1 = require("./entities/polling-unit.entity");
 dotenv.config();
 const isEnabled = (value) => ['true', '1', 'yes', 'on'].includes((value ?? '').toLowerCase());
 exports.AppDataSource = new typeorm_1.DataSource({
@@ -51,7 +54,17 @@ exports.AppDataSource = new typeorm_1.DataSource({
     username: process.env.DATABASE_USER || 'postgres',
     password: process.env.DATABASE_PASSWORD || 'postgres',
     database: process.env.DATABASE_NAME || 'kano_registration_db',
-    entities: [user_entity_1.User, agent_entity_1.Agent, supporter_entity_1.Supporter, registration_entity_1.Registration, activity_log_entity_1.ActivityLog, file_upload_entity_1.FileUpload],
+    entities: [
+        user_entity_1.User,
+        agent_entity_1.Agent,
+        supporter_entity_1.Supporter,
+        registration_entity_1.Registration,
+        activity_log_entity_1.ActivityLog,
+        file_upload_entity_1.FileUpload,
+        lga_entity_1.LocalGovernmentArea,
+        ward_entity_1.Ward,
+        polling_unit_entity_1.PollingUnit,
+    ],
     migrations: ['src/migrations/*.ts'],
     subscribers: ['src/subscribers/*.ts'],
     synchronize: isEnabled(process.env.DATABASE_SYNCHRONIZE),

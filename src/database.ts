@@ -6,6 +6,9 @@ import { Supporter } from './entities/supporter.entity';
 import { Registration } from './entities/registration.entity';
 import { ActivityLog } from './entities/activity-log.entity';
 import { FileUpload } from './entities/file-upload.entity';
+import { LocalGovernmentArea } from './entities/lga.entity';
+import { Ward } from './entities/ward.entity';
+import { PollingUnit } from './entities/polling-unit.entity';
 
 dotenv.config();
 
@@ -19,7 +22,17 @@ export const AppDataSource = new DataSource({
   username: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'kano_registration_db',
-  entities: [User, Agent, Supporter, Registration, ActivityLog, FileUpload],
+  entities: [
+    User,
+    Agent,
+    Supporter,
+    Registration,
+    ActivityLog,
+    FileUpload,
+    LocalGovernmentArea,
+    Ward,
+    PollingUnit,
+  ],
   migrations: ['src/migrations/*.ts'],
   subscribers: ['src/subscribers/*.ts'],
   synchronize: isEnabled(process.env.DATABASE_SYNCHRONIZE),
