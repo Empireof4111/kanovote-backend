@@ -10,6 +10,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  Request,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -35,8 +36,8 @@ export class AdminController {
   // DASHBOARD & STATS
   @Get('dashboard')
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
-  async getDashboard() {
-    return this.adminService.getDashboardStats();
+  async getDashboard(@Request() req: any) {
+    return this.adminService.getDashboardStats(req.user);
   }
 
   // USER MANAGEMENT

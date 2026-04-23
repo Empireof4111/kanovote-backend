@@ -56,7 +56,10 @@ export declare class AdminService {
         thisMonth: number;
         growthRate: number;
     }>;
-    getDashboardStats(): Promise<{
+    getDashboardStats(requester?: {
+        id: string;
+        role: UserRole;
+    }): Promise<{
         users: {
             total: number;
             superAdmins: number;
@@ -94,12 +97,21 @@ export declare class AdminService {
             range: string;
             count: number;
         }[];
+        recentActivities: {
+            timestamp: Date;
+            id: string;
+            type: "registration" | "verification" | "pending" | "rejected";
+            user: string;
+            action: string;
+            location: string;
+        }[];
         geography: {
             lgas: number;
             wards: number;
             pollingUnits: number;
         };
     }>;
+    private getDashboardSupporters;
     getLocationHierarchy(): Promise<{
         lgas: LocalGovernmentArea[];
         wards: Ward[];

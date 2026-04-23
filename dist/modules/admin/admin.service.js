@@ -304,7 +304,7 @@ let AdminService = class AdminService {
         };
     }
     // DASHBOARD STATS
-    async getDashboardStats() {
+    async getDashboardStats(requester) {
         const [userStats, agentStats, supporterStats, lgaCount, wardCount, puCount] = await Promise.all([
             this.getUserStats(),
             this.getAgentStats(),
@@ -313,9 +313,7 @@ let AdminService = class AdminService {
             this.wardRepository.count(),
             this.pollingUnitRepository.count(),
         ]);
-        const supporters = await this.supporterRepository.find({
-            order: { registeredAt: 'ASC' },
-        });
+        const supporters = await this.getDashboardSupporters(requester);
         const lgas = await this.lgaRepository.find();
         const lgaNameById = new Map(lgas.map((lga) => [lga.id, lga.name]));
         const registrationsByMonthMap = new Map();
@@ -368,6 +366,64 @@ let AdminService = class AdminService {
             range,
             count,
         }));
+        const recentActivities = supporters
+            .flatMap((supporter) => {
+            const supporterName = [supporter.firstName, supporter.lastName].filter(Boolean).join(' ');
+            const registeredByName = [supporter.registeredByUser?.firstName, supporter.registeredByUser?.lastName]
+                .filter(Boolean)
+                .join(' ') || 'Unknown user';
+            const lgaName = lgaNameById.get(supporter.lga) || supporter.lga;
+            const location = [supporter.pollingUnit, supporter.ward, lgaName, supporter.state]
+                .filter(Boolean)
+                .join(', ');
+            const items = [
+                {
+                    id: `registered-${supporter.id}`,
+                    type: 'registration',
+                    user: supporterName,
+                    action: `was registered by ${registeredByName}`,
+                    location,
+                    timestamp: supporter.registeredAt,
+                },
+            ];
+            if (supporter.verifiedAt && supporter.status === supporter_entity_1.VerificationStatus.VERIFIED) {
+                items.push({
+                    id: `verified-${supporter.id}`,
+                    type: 'verification',
+                    user: supporterName,
+                    action: 'was verified',
+                    location,
+                    timestamp: supporter.verifiedAt,
+                });
+            }
+            if (supporter.verifiedAt && supporter.status === supporter_entity_1.VerificationStatus.REJECTED) {
+                items.push({
+                    id: `rejected-${supporter.id}`,
+                    type: 'rejected',
+                    user: supporterName,
+                    action: 'was rejected during review',
+                    location,
+                    timestamp: supporter.verifiedAt,
+                });
+            }
+            if (supporter.status === supporter_entity_1.VerificationStatus.PENDING) {
+                items.push({
+                    id: `pending-${supporter.id}`,
+                    type: 'pending',
+                    user: supporterName,
+                    action: 'is pending review',
+                    location,
+                    timestamp: supporter.registeredAt,
+                });
+            }
+            return items;
+        })
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+            .slice(0, 8)
+            .map((item) => ({
+            ...item,
+            timestamp: item.timestamp,
+        }));
         return {
             users: userStats,
             agents: agentStats,
@@ -376,12 +432,40 @@ let AdminService = class AdminService {
             registrationsByLga,
             genderDistribution,
             ageDistribution,
+            recentActivities,
             geography: {
                 lgas: lgaCount,
                 wards: wardCount,
                 pollingUnits: puCount,
             },
         };
+    }
+    async getDashboardSupporters(requester) {
+        const query = this.supporterRepository
+            .createQueryBuilder('supporter')
+            .leftJoinAndSelect('supporter.registeredByUser', 'registeredByUser')
+            .orderBy('supporter.registeredAt', 'ASC');
+        if (!requester || requester.role === user_role_enum_1.UserRole.SUPER_ADMIN) {
+            return query.getMany();
+        }
+        if (requester.role === user_role_enum_1.UserRole.FIELD_AGENT) {
+            query.where('supporter.registeredByUserId = :userId', { userId: requester.id });
+            return query.getMany();
+        }
+        if (requester.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            const supervisorAgent = await this.agentRepository.findOne({
+                where: { userId: requester.id, role: user_role_enum_1.UserRole.SUPERVISOR },
+            });
+            if (!supervisorAgent) {
+                return [];
+            }
+            query
+                .innerJoin(agent_entity_1.Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+                .where('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT })
+                .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisorAgent.lga });
+            return query.getMany();
+        }
+        return [];
     }
     // GET LOCATION DATA IN HIERARCHICAL FORMAT
     async getLocationHierarchy() {

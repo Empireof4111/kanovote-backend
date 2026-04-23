@@ -4,7 +4,7 @@ import { CreateLgaDto, CreateWardDto, CreatePollingUnitDto, UpdateLgaDto, Update
 export declare class AdminController {
     private adminService;
     constructor(adminService: AdminService);
-    getDashboard(): Promise<{
+    getDashboard(req: any): Promise<{
         users: {
             total: number;
             superAdmins: number;
@@ -41,6 +41,14 @@ export declare class AdminController {
         ageDistribution: {
             range: string;
             count: number;
+        }[];
+        recentActivities: {
+            timestamp: Date;
+            id: string;
+            type: "registration" | "verification" | "pending" | "rejected";
+            user: string;
+            action: string;
+            location: string;
         }[];
         geography: {
             lgas: number;

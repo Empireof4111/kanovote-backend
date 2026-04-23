@@ -25,8 +25,8 @@ let AdminController = class AdminController {
         this.adminService = adminService;
     }
     // DASHBOARD & STATS
-    async getDashboard() {
-        return this.adminService.getDashboardStats();
+    async getDashboard(req) {
+        return this.adminService.getDashboardStats(req.user);
     }
     // USER MANAGEMENT
     async getAllUsers(skip = '0', take = '10', role) {
@@ -109,8 +109,9 @@ exports.AdminController = AdminController;
 __decorate([
     (0, common_1.Get)('dashboard'),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR, user_role_enum_1.UserRole.FIELD_AGENT),
+    __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getDashboard", null);
 __decorate([
