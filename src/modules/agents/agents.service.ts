@@ -260,6 +260,13 @@ export class AgentService {
 
   async delete(id: string): Promise<void> {
     const agent = await this.findById(id);
+
+    if ((agent.registrations?.length || 0) > 0) {
+      throw new BadRequestException(
+        'This field agent cannot be deleted because they already have registration records. Deactivate the agent instead.',
+      );
+    }
+
     await this.agentRepository.remove(agent);
   }
 
