@@ -103,6 +103,27 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
+], UpdateAgentDto.prototype, "firstName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdateAgentDto.prototype, "lastName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsEmail)(),
+    __metadata("design:type", String)
+], UpdateAgentDto.prototype, "email", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^[\d+\-() ]+$/, { message: 'Invalid phone number' }),
+    __metadata("design:type", String)
+], UpdateAgentDto.prototype, "phone", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
 ], UpdateAgentDto.prototype, "state", void 0);
 __decorate([
     (0, class_validator_1.IsOptional)(),

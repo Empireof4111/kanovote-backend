@@ -69,6 +69,23 @@ export class CreateAgentDto {
 export class UpdateAgentDto {
   @IsOptional()
   @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  @Matches(/^[\d+\-() ]+$/, { message: 'Invalid phone number' })
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
   state?: string;
 
   @IsOptional()

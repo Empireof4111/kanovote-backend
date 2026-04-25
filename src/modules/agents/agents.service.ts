@@ -168,10 +168,67 @@ export class AgentService {
 
   async update(id: string, updateAgentDto: UpdateAgentDto): Promise<Agent> {
     const agent = await this.findById(id);
-    
-    Object.assign(agent, updateAgentDto);
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      state,
+      lga,
+      ward,
+      status,
+      notes,
+    } = updateAgentDto;
+
+    if (email && email !== agent.user.email) {
+      const existingUser = await this.userRepository.findOne({
+        where: { email },
+      });
+
+      if (existingUser && existingUser.id !== agent.userId) {
+        throw new ConflictException('Another user with this email already exists');
+      }
+    }
+
+    if (firstName !== undefined) {
+      agent.user.firstName = firstName;
+    }
+
+    if (lastName !== undefined) {
+      agent.user.lastName = lastName;
+    }
+
+    if (email !== undefined) {
+      agent.user.email = email;
+    }
+
+    if (phone !== undefined) {
+      agent.user.phone = phone;
+    }
+
+    if (state !== undefined) {
+      agent.state = state;
+    }
+
+    if (lga !== undefined) {
+      agent.lga = lga;
+    }
+
+    if (ward !== undefined) {
+      agent.ward = ward;
+    }
+
+    if (status !== undefined) {
+      agent.status = status;
+    }
+
+    if (notes !== undefined) {
+      agent.notes = notes;
+    }
+
     agent.lastActivityAt = new Date();
 
+    await this.userRepository.save(agent.user);
     return this.agentRepository.save(agent);
   }
 

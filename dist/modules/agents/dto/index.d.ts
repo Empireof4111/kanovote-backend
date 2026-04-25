@@ -22,6 +22,10 @@ export declare class CreateAgentDto {
     notes?: string;
 }
 export declare class UpdateAgentDto {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
     state?: string;
     lga?: string;
     ward?: string;
