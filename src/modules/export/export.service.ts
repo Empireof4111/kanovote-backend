@@ -71,8 +71,44 @@ export class ExportService {
     }
 
     const agents = await query.leftJoinAndSelect('agent.user', 'user').getMany();
+    const registrationCounts = await this.registrationRepository
+      .createQueryBuilder('registration')
+      .select('registration.agentId', 'agentId')
+      .addSelect('COUNT(registration.id)', 'totalRegistrations')
+      .addSelect(
+        "COUNT(CASE WHEN registration.status = 'verified' THEN 1 END)",
+        'verifiedRegistrations',
+      )
+      .addSelect(
+        "COUNT(CASE WHEN registration.status IN ('initiated', 'in_progress', 'completed') THEN 1 END)",
+        'pendingRegistrations',
+      )
+      .addSelect(
+        "COUNT(CASE WHEN registration.status = 'rejected' THEN 1 END)",
+        'rejectedRegistrations',
+      )
+      .groupBy('registration.agentId')
+      .getRawMany();
+
+    const countsByAgentId = new Map(
+      registrationCounts.map((row) => [
+        row.agentId,
+        {
+          totalRegistrations: Number(row.totalRegistrations || 0),
+          verifiedRegistrations: Number(row.verifiedRegistrations || 0),
+          pendingRegistrations: Number(row.pendingRegistrations || 0),
+          rejectedRegistrations: Number(row.rejectedRegistrations || 0),
+        },
+      ]),
+    );
 
     const data = agents.map((agent) => ({
+      ...(countsByAgentId.get(agent.id) || {
+        totalRegistrations: 0,
+        verifiedRegistrations: 0,
+        pendingRegistrations: 0,
+        rejectedRegistrations: 0,
+      }),
       id: agent.id,
       name: `${agent.user.firstName} ${agent.user.lastName}`,
       email: agent.user.email,
@@ -81,8 +117,6 @@ export class ExportService {
       state: agent.state,
       lga: agent.lga,
       ward: agent.ward,
-      totalRegistrations: agent.totalRegistrations,
-      verifiedRegistrations: agent.verifiedRegistrations,
       status: agent.status,
       joinedAt: agent.joinedAt,
     }));
@@ -98,6 +132,8 @@ export class ExportService {
       'ward',
       'totalRegistrations',
       'verifiedRegistrations',
+      'pendingRegistrations',
+      'rejectedRegistrations',
       'status',
       'joinedAt',
     ];
