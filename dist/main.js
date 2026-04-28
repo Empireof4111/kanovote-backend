@@ -18,6 +18,8 @@ async function bootstrap() {
     const allowedOrigins = Array.from(new Set([
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:8081',
+        'http://localhost:19006',
         ...parseOrigins(process.env.FRONTEND_URL),
     ]));
     // Enable CORS

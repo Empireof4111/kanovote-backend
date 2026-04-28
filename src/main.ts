@@ -17,6 +17,8 @@ async function bootstrap() {
     new Set([
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://localhost:8081',
+      'http://localhost:19006',
       ...parseOrigins(process.env.FRONTEND_URL),
     ]),
   );

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { Agent, AgentStatus } from '@/entities/agent.entity';
+import { Registration, RegistrationStatus } from '@/entities/registration.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
@@ -12,6 +13,8 @@ export class AgentService {
   constructor(
     @InjectRepository(Agent)
     private agentRepository: Repository<Agent>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
@@ -107,14 +110,20 @@ export class AgentService {
       throw new NotFoundException('Agent not found');
     }
 
-    return agent;
+    return this.attachRegistrationStats(agent);
   }
 
   async findByUserId(userId: string): Promise<Agent | null> {
-    return this.agentRepository.findOne({
+    const agent = await this.agentRepository.findOne({
       where: { userId },
       relations: ['user', 'registrations'],
     });
+
+    if (!agent) {
+      return null;
+    }
+
+    return this.attachRegistrationStats(agent);
   }
 
   async findAll(
@@ -148,12 +157,18 @@ export class AgentService {
       query.andWhere('agent.status = :status', { status: filters.status });
     }
 
-    return query
+    const [agents, total] = await query
       .leftJoinAndSelect('agent.user', 'user')
       .skip(skip)
       .take(take)
       .orderBy('agent.joinedAt', 'DESC')
       .getManyAndCount();
+
+    const hydratedAgents = await Promise.all(
+      agents.map((agent) => this.attachRegistrationStats(agent)),
+    );
+
+    return [hydratedAgents, total] as const;
   }
 
   async findByIdForRequester(id: string, requester: { id: string; role: UserRole }): Promise<Agent> {
@@ -249,28 +264,9 @@ export class AgentService {
 
   async updateRegistrationStats(agentId: string): Promise<void> {
     const agent = await this.findById(agentId);
-    
-    const stats = await this.agentRepository
-      .createQueryBuilder('agent')
-      .leftJoinAndSelect('agent.registrations', 'registration')
-      .select('COUNT(CASE WHEN registration.status = :verified THEN 1 END)', 'verifiedCount')
-      .addSelect('COUNT(CASE WHEN registration.status = :pending THEN 1 END)', 'pendingCount')
-      .addSelect('COUNT(CASE WHEN registration.status = :rejected THEN 1 END)', 'rejectedCount')
-      .addSelect('COUNT(registration.id)', 'totalCount')
-      .where('agent.id = :agentId', { agentId })
-      .setParameters({
-        verified: 'verified',
-        pending: 'pending',
-        rejected: 'rejected',
-      })
-      .getRawOne();
 
-    agent.totalRegistrations = parseInt(stats?.totalCount || 0);
-    agent.verifiedRegistrations = parseInt(stats?.verifiedCount || 0);
-    agent.pendingRegistrations = parseInt(stats?.pendingCount || 0);
-    agent.rejectedRegistrations = parseInt(stats?.rejectedCount || 0);
-
-    await this.agentRepository.save(agent);
+    const hydratedAgent = await this.attachRegistrationStats(agent);
+    await this.agentRepository.save(hydratedAgent);
   }
 
   async getPerformanceReport(agentId: string) {
@@ -345,5 +341,33 @@ export class AgentService {
     if (agent.role !== UserRole.FIELD_AGENT || agent.lga !== supervisorAgent.lga) {
       throw new ForbiddenException('You can only access field agents in your local government area');
     }
+  }
+
+  private async attachRegistrationStats(agent: Agent): Promise<Agent> {
+    const [total, verified, rejected, initiated, inProgress, completed] = await Promise.all([
+      this.registrationRepository.count({ where: { agentId: agent.id } }),
+      this.registrationRepository.count({
+        where: { agentId: agent.id, status: RegistrationStatus.VERIFIED },
+      }),
+      this.registrationRepository.count({
+        where: { agentId: agent.id, status: RegistrationStatus.REJECTED },
+      }),
+      this.registrationRepository.count({
+        where: { agentId: agent.id, status: RegistrationStatus.INITIATED },
+      }),
+      this.registrationRepository.count({
+        where: { agentId: agent.id, status: RegistrationStatus.IN_PROGRESS },
+      }),
+      this.registrationRepository.count({
+        where: { agentId: agent.id, status: RegistrationStatus.COMPLETED },
+      }),
+    ]);
+
+    agent.totalRegistrations = total;
+    agent.verifiedRegistrations = verified;
+    agent.rejectedRegistrations = rejected;
+    agent.pendingRegistrations = initiated + inProgress + completed;
+
+    return agent;
   }
 }

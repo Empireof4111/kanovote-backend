@@ -1,12 +1,14 @@
 import { Repository } from 'typeorm';
 import { Agent, AgentStatus } from '@/entities/agent.entity';
+import { Registration } from '@/entities/registration.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
 export declare class AgentService {
     private agentRepository;
+    private registrationRepository;
     private userRepository;
-    constructor(agentRepository: Repository<Agent>, userRepository: Repository<User>);
+    constructor(agentRepository: Repository<Agent>, registrationRepository: Repository<Registration>, userRepository: Repository<User>);
     registerAgent(registerAgentDto: RegisterAgentDto): Promise<{
         agent: Agent;
         user: User;
@@ -17,7 +19,7 @@ export declare class AgentService {
     findAll(skip?: number, take?: number, filters?: AgentPerformanceDto, requester?: {
         id: string;
         role: UserRole;
-    }): Promise<[Agent[], number]>;
+    }): Promise<readonly [Agent[], number]>;
     findByIdForRequester(id: string, requester: {
         id: string;
         role: UserRole;
@@ -47,5 +49,6 @@ export declare class AgentService {
     delete(id: string): Promise<void>;
     private findSupervisorAgentByUserId;
     private assertSupervisorCanAccessAgent;
+    private attachRegistrationStats;
 }
 //# sourceMappingURL=agents.service.d.ts.map
