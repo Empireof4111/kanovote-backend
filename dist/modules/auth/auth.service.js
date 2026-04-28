@@ -47,6 +47,7 @@ const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
 const bcrypt = __importStar(require("bcryptjs"));
 const user_service_1 = require("../user/user.service");
+const agent_entity_1 = require("../../entities/agent.entity");
 const user_role_enum_1 = require("../../entities/user-role.enum");
 const config_1 = require("@nestjs/config");
 let AuthService = class AuthService {
@@ -57,10 +58,20 @@ let AuthService = class AuthService {
     }
     async validateUser(email, password) {
         const user = await this.userService.findByEmail(email);
-        if (user && (await bcrypt.compare(password, user.password))) {
-            return user;
+        if (!user) {
+            return null;
         }
-        return null;
+        if (!user.isActive) {
+            throw new common_1.UnauthorizedException('Your account has been deactivated. Please contact an administrator.');
+        }
+        if (!(await bcrypt.compare(password, user.password))) {
+            return null;
+        }
+        if ((user.role === user_role_enum_1.UserRole.FIELD_AGENT || user.role === user_role_enum_1.UserRole.SUPERVISOR) &&
+            user.agents?.some((agent) => agent.status !== agent_entity_1.AgentStatus.ACTIVE)) {
+            throw new common_1.UnauthorizedException('Your agent account is inactive. Please contact an administrator.');
+        }
+        return user;
     }
     async login(user) {
         const payload = { sub: user.id, email: user.email };

@@ -295,12 +295,16 @@ export class AgentService {
   async deactivate(id: string): Promise<Agent> {
     const agent = await this.findById(id);
     agent.status = AgentStatus.INACTIVE;
+    agent.user.isActive = false;
+    await this.userRepository.save(agent.user);
     return this.agentRepository.save(agent);
   }
 
   async suspend(id: string): Promise<Agent> {
     const agent = await this.findById(id);
     agent.status = AgentStatus.SUSPENDED;
+    agent.user.isActive = false;
+    await this.userRepository.save(agent.user);
     return this.agentRepository.save(agent);
   }
 
@@ -308,6 +312,8 @@ export class AgentService {
     const agent = await this.findById(id);
     agent.status = AgentStatus.ACTIVE;
     agent.lastActivityAt = new Date();
+    agent.user.isActive = true;
+    await this.userRepository.save(agent.user);
     return this.agentRepository.save(agent);
   }
 

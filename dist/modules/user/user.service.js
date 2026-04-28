@@ -34,6 +34,7 @@ let UserService = class UserService {
     async findByEmail(email) {
         return this.userRepository.findOne({
             where: { email },
+            relations: ['agents'],
         });
     }
     async findByUsername(username) {

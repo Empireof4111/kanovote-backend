@@ -265,17 +265,23 @@ let AgentService = class AgentService {
     async deactivate(id) {
         const agent = await this.findById(id);
         agent.status = agent_entity_1.AgentStatus.INACTIVE;
+        agent.user.isActive = false;
+        await this.userRepository.save(agent.user);
         return this.agentRepository.save(agent);
     }
     async suspend(id) {
         const agent = await this.findById(id);
         agent.status = agent_entity_1.AgentStatus.SUSPENDED;
+        agent.user.isActive = false;
+        await this.userRepository.save(agent.user);
         return this.agentRepository.save(agent);
     }
     async activate(id) {
         const agent = await this.findById(id);
         agent.status = agent_entity_1.AgentStatus.ACTIVE;
         agent.lastActivityAt = new Date();
+        agent.user.isActive = true;
+        await this.userRepository.save(agent.user);
         return this.agentRepository.save(agent);
     }
     async delete(id) {

@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
 import { LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
+import { AgentStatus } from '@/entities/agent.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { ConfigService } from '@nestjs/config';
@@ -17,10 +18,26 @@ export class AuthService {
 
   async validateUser(email: string, password: string): Promise<User | null> {
     const user = await this.userService.findByEmail(email);
-    if (user && (await bcrypt.compare(password, user.password))) {
-      return user;
+    if (!user) {
+      return null;
     }
-    return null;
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Your account has been deactivated. Please contact an administrator.');
+    }
+
+    if (!(await bcrypt.compare(password, user.password))) {
+      return null;
+    }
+
+    if (
+      (user.role === UserRole.FIELD_AGENT || user.role === UserRole.SUPERVISOR) &&
+      user.agents?.some((agent) => agent.status !== AgentStatus.ACTIVE)
+    ) {
+      throw new UnauthorizedException('Your agent account is inactive. Please contact an administrator.');
+    }
+
+    return user;
   }
 
   async login(user: User) {
