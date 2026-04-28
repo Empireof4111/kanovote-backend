@@ -17,12 +17,14 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const agent_entity_1 = require("../../entities/agent.entity");
+const registration_entity_1 = require("../../entities/registration.entity");
 const supporter_entity_1 = require("../../entities/supporter.entity");
 const user_role_enum_1 = require("../../entities/user-role.enum");
 let SupporterService = class SupporterService {
-    constructor(supporterRepository, agentRepository) {
+    constructor(supporterRepository, agentRepository, registrationRepository) {
         this.supporterRepository = supporterRepository;
         this.agentRepository = agentRepository;
+        this.registrationRepository = registrationRepository;
     }
     async create(createSupporterDto, registeredByUserId) {
         const normalizedEmail = createSupporterDto.email?.trim().toLowerCase() || null;
@@ -104,10 +106,25 @@ let SupporterService = class SupporterService {
     }
     async verify(id, verifySupporterDto, verifiedByUserId) {
         const supporter = await this.findById(id);
+        const verifiedAt = new Date();
         supporter.status = verifySupporterDto.status;
         supporter.verificationNotes = verifySupporterDto.notes || '';
         supporter.verifiedByUserId = verifiedByUserId;
-        supporter.verifiedAt = new Date();
+        supporter.verifiedAt = verifiedAt;
+        const registrationStatus = verifySupporterDto.status === supporter_entity_1.VerificationStatus.VERIFIED
+            ? registration_entity_1.RegistrationStatus.VERIFIED
+            : registration_entity_1.RegistrationStatus.REJECTED;
+        const registrations = await this.registrationRepository.find({
+            where: { supporterId: supporter.id },
+        });
+        if (registrations.length > 0) {
+            const updatedRegistrations = registrations.map((registration) => {
+                registration.status = registrationStatus;
+                registration.verifiedAt = verifiedAt;
+                return registration;
+            });
+            await this.registrationRepository.save(updatedRegistrations);
+        }
         return this.supporterRepository.save(supporter);
     }
     async findByIdForRequester(id, requester) {
@@ -190,7 +207,9 @@ exports.SupporterService = SupporterService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, typeorm_1.InjectRepository)(supporter_entity_1.Supporter)),
     __param(1, (0, typeorm_1.InjectRepository)(agent_entity_1.Agent)),
+    __param(2, (0, typeorm_1.InjectRepository)(registration_entity_1.Registration)),
     __metadata("design:paramtypes", [typeorm_2.Repository,
+        typeorm_2.Repository,
         typeorm_2.Repository])
 ], SupporterService);
 //# sourceMappingURL=supporters.service.js.map

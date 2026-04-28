@@ -1,12 +1,14 @@
 import { Repository } from 'typeorm';
 import { Agent } from '@/entities/agent.entity';
+import { Registration } from '@/entities/registration.entity';
 import { Supporter, VerificationStatus } from '@/entities/supporter.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { CreateSupporterDto, UpdateSupporterDto, VerifySupporterDto } from './dto';
 export declare class SupporterService {
     private supporterRepository;
     private agentRepository;
-    constructor(supporterRepository: Repository<Supporter>, agentRepository: Repository<Agent>);
+    private registrationRepository;
+    constructor(supporterRepository: Repository<Supporter>, agentRepository: Repository<Agent>, registrationRepository: Repository<Registration>);
     create(createSupporterDto: CreateSupporterDto, registeredByUserId: string): Promise<Supporter>;
     findById(id: string): Promise<Supporter>;
     findAll(skip?: number, take?: number, filters?: {

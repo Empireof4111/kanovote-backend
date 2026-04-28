@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException 
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOptionsWhere, Repository } from 'typeorm';
 import { Agent } from '@/entities/agent.entity';
+import { Registration, RegistrationStatus } from '@/entities/registration.entity';
 import { Supporter, VerificationStatus } from '@/entities/supporter.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { CreateSupporterDto, UpdateSupporterDto, VerifySupporterDto } from './dto';
@@ -13,6 +14,8 @@ export class SupporterService {
     private supporterRepository: Repository<Supporter>,
     @InjectRepository(Agent)
     private agentRepository: Repository<Agent>,
+    @InjectRepository(Registration)
+    private registrationRepository: Repository<Registration>,
   ) {}
 
   async create(createSupporterDto: CreateSupporterDto, registeredByUserId: string): Promise<Supporter> {
@@ -131,11 +134,31 @@ export class SupporterService {
 
   async verify(id: string, verifySupporterDto: VerifySupporterDto, verifiedByUserId: string): Promise<Supporter> {
     const supporter = await this.findById(id);
+    const verifiedAt = new Date();
 
     supporter.status = verifySupporterDto.status;
     supporter.verificationNotes = verifySupporterDto.notes || '';
     supporter.verifiedByUserId = verifiedByUserId;
-    supporter.verifiedAt = new Date();
+    supporter.verifiedAt = verifiedAt;
+
+    const registrationStatus =
+      verifySupporterDto.status === VerificationStatus.VERIFIED
+        ? RegistrationStatus.VERIFIED
+        : RegistrationStatus.REJECTED;
+
+    const registrations = await this.registrationRepository.find({
+      where: { supporterId: supporter.id },
+    });
+
+    if (registrations.length > 0) {
+      const updatedRegistrations = registrations.map((registration) => {
+        registration.status = registrationStatus;
+        registration.verifiedAt = verifiedAt;
+        return registration;
+      });
+
+      await this.registrationRepository.save(updatedRegistrations);
+    }
 
     return this.supporterRepository.save(supporter);
   }
