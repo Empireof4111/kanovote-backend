@@ -12,13 +12,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LocalGovernmentArea = void 0;
 const typeorm_1 = require("typeorm");
 const ward_entity_1 = require("./ward.entity");
-let LocalGovernmentArea = class LocalGovernmentArea {
+const base_uuid_entity_1 = require("./base-uuid.entity");
+let LocalGovernmentArea = class LocalGovernmentArea extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.LocalGovernmentArea = LocalGovernmentArea;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], LocalGovernmentArea.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)

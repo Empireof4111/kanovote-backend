@@ -1,4 +1,5 @@
 import { User } from './user.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 export declare enum ActivityAction {
     LOGIN = "login",
     LOGOUT = "logout",
@@ -14,8 +15,7 @@ export declare enum ActivityAction {
     VIEW_REPORT = "view_report",
     UPDATE_SETTINGS = "update_settings"
 }
-export declare class ActivityLog {
-    id: string;
+export declare class ActivityLog extends BaseUuidEntity {
     userId: string;
     user: User;
     action: ActivityAction;

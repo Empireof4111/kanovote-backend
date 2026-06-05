@@ -13,6 +13,7 @@ exports.Registration = exports.RegistrationStatus = void 0;
 const typeorm_1 = require("typeorm");
 const agent_entity_1 = require("./agent.entity");
 const supporter_entity_1 = require("./supporter.entity");
+const base_uuid_entity_1 = require("./base-uuid.entity");
 var RegistrationStatus;
 (function (RegistrationStatus) {
     RegistrationStatus["INITIATED"] = "initiated";
@@ -21,13 +22,9 @@ var RegistrationStatus;
     RegistrationStatus["VERIFIED"] = "verified";
     RegistrationStatus["REJECTED"] = "rejected";
 })(RegistrationStatus || (exports.RegistrationStatus = RegistrationStatus = {}));
-let Registration = class Registration {
+let Registration = class Registration extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.Registration = Registration;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], Registration.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

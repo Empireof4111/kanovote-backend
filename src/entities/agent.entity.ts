@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -12,6 +11,7 @@ import {
 import { User } from './user.entity';
 import { UserRole } from './user-role.enum';
 import { Registration } from './registration.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 export enum AgentStatus {
   ACTIVE = 'active',
@@ -21,9 +21,7 @@ export enum AgentStatus {
 
 @Entity('agents')
 @Index(['userId'], { unique: true })
-export class Agent {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Agent extends BaseUuidEntity {
 
   @Column({ type: 'uuid' })
   userId: string;

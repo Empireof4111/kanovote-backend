@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -11,6 +10,7 @@ import {
 } from 'typeorm';
 import { User } from './user.entity';
 import { Registration } from './registration.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 export enum VerificationStatus {
   PENDING = 'pending',
@@ -23,9 +23,7 @@ export enum VerificationStatus {
 @Index(['phone'], { unique: true })
 @Index(['voterCardNumber'])
 @Index(['state', 'lga', 'ward'])
-export class Supporter {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Supporter extends BaseUuidEntity {
 
   @Column({ type: 'varchar', length: 255 })
   firstName: string;

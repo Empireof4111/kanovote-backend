@@ -1,7 +1,7 @@
 {
-  "name": "kano-registration-backend",
+  "name": "wemobilize-backend",
   "version": "1.0.0",
-  "description": "NestJS Backend for Kano State Political Registration Dashboard",
+  "description": "NestJS backend for the WeMobilize supporter registration and campaign operations system",
   "author": "Your Name",
   "private": true,
   "license": "MIT",

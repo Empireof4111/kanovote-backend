@@ -2,8 +2,8 @@ import { Agent } from './agent.entity';
 import { Supporter } from './supporter.entity';
 import { ActivityLog } from './activity-log.entity';
 import { UserRole } from './user-role.enum';
-export declare class User {
-    id: string;
+import { BaseUuidEntity } from './base-uuid.entity';
+export declare class User extends BaseUuidEntity {
     firstName: string;
     lastName: string;
     email: string;

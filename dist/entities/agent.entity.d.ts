@@ -1,13 +1,13 @@
 import { User } from './user.entity';
 import { UserRole } from './user-role.enum';
 import { Registration } from './registration.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 export declare enum AgentStatus {
     ACTIVE = "active",
     INACTIVE = "inactive",
     SUSPENDED = "suspended"
 }
-export declare class Agent {
-    id: string;
+export declare class Agent extends BaseUuidEntity {
     userId: string;
     user: User;
     role: UserRole;

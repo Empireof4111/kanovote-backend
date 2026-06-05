@@ -7,7 +7,6 @@ export declare class AgentController {
     registerAgent(registerAgentDto: RegisterAgentDto): Promise<{
         agent: import("../../entities/agent.entity").Agent;
         user: {
-            id: string;
             firstName: string;
             lastName: string;
             email: string;
@@ -27,6 +26,7 @@ export declare class AgentController {
             agents: import("../../entities/agent.entity").Agent[];
             registeredSupporters: import("../../entities/supporter.entity").Supporter[];
             activityLogs: import("../../entities/activity-log.entity").ActivityLog[];
+            id: string;
         };
     }>;
     create(createAgentDto: CreateAgentDto): Promise<import("../../entities/agent.entity").Agent>;

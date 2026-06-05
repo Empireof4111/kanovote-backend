@@ -15,13 +15,10 @@ const agent_entity_1 = require("./agent.entity");
 const supporter_entity_1 = require("./supporter.entity");
 const activity_log_entity_1 = require("./activity-log.entity");
 const user_role_enum_1 = require("./user-role.enum");
-let User = class User {
+const base_uuid_entity_1 = require("./base-uuid.entity");
+let User = class User extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.User = User;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], User.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)

@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -11,13 +10,12 @@ import { Agent } from './agent.entity';
 import { Supporter } from './supporter.entity';
 import { ActivityLog } from './activity-log.entity';
 import { UserRole } from './user-role.enum';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 @Entity('users')
 @Index(['email'], { unique: true })
 @Index(['username'], { unique: true })
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class User extends BaseUuidEntity {
 
   @Column({ type: 'varchar', length: 255 })
   firstName: string;

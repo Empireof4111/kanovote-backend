@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   ManyToOne,
@@ -9,6 +8,7 @@ import {
 } from 'typeorm';
 import { Supporter } from './supporter.entity';
 import { User } from './user.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 export enum FileType {
   VOTER_CARD = 'voter_card',
@@ -23,9 +23,7 @@ export enum FileType {
 @Index(['supporterId'])
 @Index(['uploadedByUserId'])
 @Index(['createdAt'])
-export class FileUpload {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class FileUpload extends BaseUuidEntity {
 
   @Column({ type: 'uuid' })
   supporterId: string;

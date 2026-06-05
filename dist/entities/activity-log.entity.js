@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ActivityLog = exports.ActivityAction = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
+const base_uuid_entity_1 = require("./base-uuid.entity");
 var ActivityAction;
 (function (ActivityAction) {
     ActivityAction["LOGIN"] = "login";
@@ -28,13 +29,9 @@ var ActivityAction;
     ActivityAction["VIEW_REPORT"] = "view_report";
     ActivityAction["UPDATE_SETTINGS"] = "update_settings";
 })(ActivityAction || (exports.ActivityAction = ActivityAction = {}));
-let ActivityLog = class ActivityLog {
+let ActivityLog = class ActivityLog extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.ActivityLog = ActivityLog;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], ActivityLog.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

@@ -13,6 +13,7 @@ exports.FileUpload = exports.FileType = void 0;
 const typeorm_1 = require("typeorm");
 const supporter_entity_1 = require("./supporter.entity");
 const user_entity_1 = require("./user.entity");
+const base_uuid_entity_1 = require("./base-uuid.entity");
 var FileType;
 (function (FileType) {
     FileType["VOTER_CARD"] = "voter_card";
@@ -22,13 +23,9 @@ var FileType;
     FileType["UTILITY_BILL"] = "utility_bill";
     FileType["OTHER"] = "other";
 })(FileType || (exports.FileType = FileType = {}));
-let FileUpload = class FileUpload {
+let FileUpload = class FileUpload extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.FileUpload = FileUpload;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], FileUpload.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

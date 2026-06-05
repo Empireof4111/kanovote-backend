@@ -1,5 +1,6 @@
 import { Supporter } from './supporter.entity';
 import { User } from './user.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 export declare enum FileType {
     VOTER_CARD = "voter_card",
     IDENTITY_CARD = "identity_card",
@@ -8,8 +9,7 @@ export declare enum FileType {
     UTILITY_BILL = "utility_bill",
     OTHER = "other"
 }
-export declare class FileUpload {
-    id: string;
+export declare class FileUpload extends BaseUuidEntity {
     supporterId: string;
     supporter: Supporter;
     uploadedByUserId: string;

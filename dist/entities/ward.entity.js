@@ -13,13 +13,10 @@ exports.Ward = void 0;
 const typeorm_1 = require("typeorm");
 const lga_entity_1 = require("./lga.entity");
 const polling_unit_entity_1 = require("./polling-unit.entity");
-let Ward = class Ward {
+const base_uuid_entity_1 = require("./base-uuid.entity");
+let Ward = class Ward extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.Ward = Ward;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], Ward.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

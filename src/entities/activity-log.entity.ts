@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   ManyToOne,
@@ -8,6 +7,7 @@ import {
   Index,
 } from 'typeorm';
 import { User } from './user.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 export enum ActivityAction {
   LOGIN = 'login',
@@ -30,9 +30,7 @@ export enum ActivityAction {
 @Index(['action'])
 @Index(['createdAt'])
 @Index(['entityType', 'entityId'])
-export class ActivityLog {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class ActivityLog extends BaseUuidEntity {
 
   @Column({ type: 'uuid' })
   userId: string;

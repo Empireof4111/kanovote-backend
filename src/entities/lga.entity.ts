@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -8,12 +7,11 @@ import {
   Index,
 } from 'typeorm';
 import { Ward } from './ward.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 @Entity('local_government_areas')
 @Index(['code'], { unique: true })
-export class LocalGovernmentArea {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class LocalGovernmentArea extends BaseUuidEntity {
 
   @Column({ type: 'varchar', length: 255 })
   name: string;

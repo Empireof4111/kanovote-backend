@@ -13,19 +13,16 @@ exports.Supporter = exports.VerificationStatus = void 0;
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
 const registration_entity_1 = require("./registration.entity");
+const base_uuid_entity_1 = require("./base-uuid.entity");
 var VerificationStatus;
 (function (VerificationStatus) {
     VerificationStatus["PENDING"] = "pending";
     VerificationStatus["VERIFIED"] = "verified";
     VerificationStatus["REJECTED"] = "rejected";
 })(VerificationStatus || (exports.VerificationStatus = VerificationStatus = {}));
-let Supporter = class Supporter {
+let Supporter = class Supporter extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.Supporter = Supporter;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], Supporter.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', length: 255 }),
     __metadata("design:type", String)

@@ -1,7 +1,7 @@
 import { Ward } from './ward.entity';
 import { LocalGovernmentArea } from './lga.entity';
-export declare class PollingUnit {
-    id: string;
+import { BaseUuidEntity } from './base-uuid.entity';
+export declare class PollingUnit extends BaseUuidEntity {
     wardId: string;
     lgaId: string;
     ward: Ward;

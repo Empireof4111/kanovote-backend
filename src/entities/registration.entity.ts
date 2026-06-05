@@ -1,6 +1,5 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -10,6 +9,7 @@ import {
 } from 'typeorm';
 import { Agent } from './agent.entity';
 import { Supporter } from './supporter.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 
 export enum RegistrationStatus {
   INITIATED = 'initiated',
@@ -24,9 +24,7 @@ export enum RegistrationStatus {
 @Index(['supporterId'])
 @Index(['status'])
 @Index(['createdAt'])
-export class Registration {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class Registration extends BaseUuidEntity {
 
   @Column({ type: 'uuid' })
   agentId: string;

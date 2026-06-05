@@ -13,13 +13,10 @@ exports.PollingUnit = void 0;
 const typeorm_1 = require("typeorm");
 const ward_entity_1 = require("./ward.entity");
 const lga_entity_1 = require("./lga.entity");
-let PollingUnit = class PollingUnit {
+const base_uuid_entity_1 = require("./base-uuid.entity");
+let PollingUnit = class PollingUnit extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.PollingUnit = PollingUnit;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], PollingUnit.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

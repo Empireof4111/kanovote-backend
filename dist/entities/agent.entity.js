@@ -14,19 +14,16 @@ const typeorm_1 = require("typeorm");
 const user_entity_1 = require("./user.entity");
 const user_role_enum_1 = require("./user-role.enum");
 const registration_entity_1 = require("./registration.entity");
+const base_uuid_entity_1 = require("./base-uuid.entity");
 var AgentStatus;
 (function (AgentStatus) {
     AgentStatus["ACTIVE"] = "active";
     AgentStatus["INACTIVE"] = "inactive";
     AgentStatus["SUSPENDED"] = "suspended";
 })(AgentStatus || (exports.AgentStatus = AgentStatus = {}));
-let Agent = class Agent {
+let Agent = class Agent extends base_uuid_entity_1.BaseUuidEntity {
 };
 exports.Agent = Agent;
-__decorate([
-    (0, typeorm_1.PrimaryGeneratedColumn)('uuid'),
-    __metadata("design:type", String)
-], Agent.prototype, "id", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'uuid' }),
     __metadata("design:type", String)

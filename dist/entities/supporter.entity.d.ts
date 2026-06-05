@@ -1,12 +1,12 @@
 import { User } from './user.entity';
 import { Registration } from './registration.entity';
+import { BaseUuidEntity } from './base-uuid.entity';
 export declare enum VerificationStatus {
     PENDING = "pending",
     VERIFIED = "verified",
     REJECTED = "rejected"
 }
-export declare class Supporter {
-    id: string;
+export declare class Supporter extends BaseUuidEntity {
     firstName: string;
     lastName: string;
     email: string | null;
