@@ -9,6 +9,7 @@ import { User } from '@/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { AdminBootstrapService } from './admin-bootstrap.service';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { LocalStrategy } from './strategies/local.strategy';
       }),
     }),
   ],
-  providers: [AuthService, UserService, JwtStrategy, LocalStrategy],
+  providers: [AuthService, UserService, JwtStrategy, LocalStrategy, AdminBootstrapService],
   controllers: [AuthController],
   exports: [AuthService, UserService],
 })
