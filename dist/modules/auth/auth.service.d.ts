@@ -1,6 +1,6 @@
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
+import { ChangePasswordDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto, UpdateProfileDto } from './dto';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { ConfigService } from '@nestjs/config';
@@ -35,6 +35,20 @@ export declare class AuthService {
             phone: string;
             isEmailVerified: boolean;
         };
+    }>;
+    updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<{
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        username: string;
+        role: UserRole;
+        phone: string;
+        isEmailVerified: boolean;
+        createdAt: Date;
+    }>;
+    changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{
+        message: string;
     }>;
     requestPasswordReset(resetPasswordDto: ResetPasswordDto): Promise<{
         message: string;

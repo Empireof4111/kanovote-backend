@@ -2,7 +2,7 @@ import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import { UserService } from '../user/user.service';
-import { LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
+import { ChangePasswordDto, LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto, UpdateProfileDto } from './dto';
 import { AgentStatus } from '@/entities/agent.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
@@ -89,6 +89,32 @@ export class AuthService {
     });
 
     return this.login(user);
+  }
+
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto) {
+    const user = await this.userService.updateProfile(userId, updateProfileDto);
+    return {
+      id: user.id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      username: user.username,
+      role: user.role,
+      phone: user.phone,
+      isEmailVerified: user.isEmailVerified,
+      createdAt: user.createdAt,
+    };
+  }
+
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
+    const user = await this.userService.findById(userId);
+    if (!user || !(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    await this.userService.updatePassword(userId, hashedPassword);
+    return { message: 'Password updated successfully' };
   }
 
   async requestPasswordReset(resetPasswordDto: ResetPasswordDto) {

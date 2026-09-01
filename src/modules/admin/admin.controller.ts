@@ -11,6 +11,8 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -26,6 +28,7 @@ import {
   UpdatePollingUnitDto,
   UpdateUserRoleDto,
 } from './dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -199,5 +202,17 @@ export class AdminController {
   @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR, UserRole.FIELD_AGENT)
   async getLocationHierarchy() {
     return this.adminService.getLocationHierarchy();
+  }
+
+  // IMPORT LOCATIONS CSV (multipart form file)
+  @Post('locations/import')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file'))
+  async importLocations(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('replace') replace?: string,
+  ) {
+    const replaceFlag = replace === 'true' || replace === '1';
+    return this.adminService.importLocations(file, replaceFlag);
   }
 }

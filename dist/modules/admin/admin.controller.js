@@ -20,6 +20,7 @@ const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const user_role_enum_1 = require("../../entities/user-role.enum");
 const dto_1 = require("./dto");
+const platform_express_1 = require("@nestjs/platform-express");
 let AdminController = class AdminController {
     constructor(adminService) {
         this.adminService = adminService;
@@ -103,6 +104,11 @@ let AdminController = class AdminController {
     // GET LOCATION HIERARCHY
     async getLocationHierarchy() {
         return this.adminService.getLocationHierarchy();
+    }
+    // IMPORT LOCATIONS CSV (multipart form file)
+    async importLocations(file, replace) {
+        const replaceFlag = replace === 'true' || replace === '1';
+        return this.adminService.importLocations(file, replaceFlag);
     }
 };
 exports.AdminController = AdminController;
@@ -297,6 +303,16 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getLocationHierarchy", null);
+__decorate([
+    (0, common_1.Post)('locations/import'),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)('file')),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Query)('replace')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "importLocations", null);
 exports.AdminController = AdminController = __decorate([
     (0, common_1.Controller)('admin'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

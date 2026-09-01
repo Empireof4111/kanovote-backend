@@ -338,6 +338,218 @@ export class AdminService {
     await this.pollingUnitRepository.remove(pu);
   }
 
+  async importLocations(file: Express.Multer.File | undefined, replace = false) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException('CSV file is required');
+    }
+
+    const csvContent = file.buffer.toString('utf8');
+
+    // Inline lightweight CSV parser and normalization (matching existing script)
+    const parseCsv = (content: string): string[][] => {
+      const rows: string[][] = [];
+      let currentRow: string[] = [];
+      let currentValue = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < content.length; i += 1) {
+        const char = content[i];
+        const nextChar = content[i + 1];
+
+        if (char === '"') {
+          if (inQuotes && nextChar === '"') {
+            currentValue += '"';
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+          continue;
+        }
+
+        if (char === ',' && !inQuotes) {
+          currentRow.push(currentValue);
+          currentValue = '';
+          continue;
+        }
+
+        if ((char === '\n' || char === '\r') && !inQuotes) {
+          if (char === '\r' && nextChar === '\n') {
+            i += 1;
+          }
+
+          currentRow.push(currentValue);
+          if (currentRow.some((cell) => cell.trim() !== '')) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentValue = '';
+          continue;
+        }
+
+        currentValue += char;
+      }
+
+      if (currentValue.length > 0 || currentRow.length > 0) {
+        currentRow.push(currentValue);
+        if (currentRow.some((cell) => cell.trim() !== '')) {
+          rows.push(currentRow);
+        }
+      }
+
+      return rows;
+    };
+
+    const normalizeHeader = (value: string) => value.trim().toLowerCase().replace(/[\s-]+/g, '_');
+    const normalizeValue = (v?: string) => (v || '').trim();
+
+    const parsedRows = parseCsv(csvContent);
+    if (parsedRows.length < 2) {
+      throw new BadRequestException('CSV must include a header row and at least one data row');
+    }
+
+    const headers = parsedRows[0].map(normalizeHeader);
+    const dataRows = parsedRows.slice(1).map((row, index) => {
+      const get = (header: string) => normalizeValue(row[headers.indexOf(header)]);
+      const mapped = {
+        lgaCode: get('lga_code'),
+        lgaName: get('lga_name'),
+        wardCode: get('ward_code'),
+        wardName: get('ward_name'),
+        pollingUnitCode: get('polling_unit_code'),
+        pollingUnitName: get('polling_unit_name'),
+        address: get('address'),
+        registeredVoters: Number.parseInt(get('registered_voters') || '0', 10) || 0,
+        lgaDescription: get('lga_description') || undefined,
+        wardDescription: get('ward_description') || undefined,
+      } as any;
+
+      const requiredValues: Array<[keyof typeof mapped, string]> = [
+        ['lgaCode', 'lga_code'],
+        ['lgaName', 'lga_name'],
+        ['wardCode', 'ward_code'],
+        ['wardName', 'ward_name'],
+        ['pollingUnitCode', 'polling_unit_code'],
+        ['pollingUnitName', 'polling_unit_name'],
+        ['address', 'address'],
+      ];
+
+      for (const [key, label] of requiredValues) {
+        if (!mapped[key]) {
+          throw new BadRequestException(`Row ${index + 2}: ${label} is required`);
+        }
+      }
+
+      return mapped as {
+        lgaCode: string;
+        lgaName: string;
+        wardCode: string;
+        wardName: string;
+        pollingUnitCode: string;
+        pollingUnitName: string;
+        address: string;
+        registeredVoters: number;
+        lgaDescription?: string;
+        wardDescription?: string;
+      };
+    });
+
+    // Perform DB import using injected repositories
+    if (replace) {
+      await this.pollingUnitRepository.createQueryBuilder().delete().from(PollingUnit).execute();
+      await this.wardRepository.createQueryBuilder().delete().from(Ward).execute();
+      await this.lgaRepository.createQueryBuilder().delete().from(LocalGovernmentArea).execute();
+    }
+
+    const lgaByCode = new Map((await this.lgaRepository.find()).map((lga) => [lga.code.trim().toUpperCase(), lga]));
+    const wardByKey = new Map((await this.wardRepository.find()).map((ward) => [`${ward.lgaId}:${ward.code.trim().toUpperCase()}`, ward]));
+    const pollingUnitByCode = new Map((await this.pollingUnitRepository.find()).map((pu) => [pu.code.trim().toUpperCase(), pu]));
+
+    const stats = {
+      lgasCreated: 0,
+      lgasUpdated: 0,
+      wardsCreated: 0,
+      wardsUpdated: 0,
+      pollingUnitsCreated: 0,
+      pollingUnitsUpdated: 0,
+    };
+
+    for (const row of dataRows) {
+      const lgaCode = row.lgaCode.toUpperCase();
+      let lga = lgaByCode.get(lgaCode);
+
+      if (!lga) {
+        lga = this.lgaRepository.create({ code: lgaCode, name: row.lgaName, description: row.lgaDescription || undefined });
+        lga = await this.lgaRepository.save(lga);
+        lgaByCode.set(lgaCode, lga);
+        stats.lgasCreated += 1;
+      } else if (lga.name !== row.lgaName || (row.lgaDescription && lga.description !== row.lgaDescription)) {
+        lga.name = row.lgaName;
+        lga.description = row.lgaDescription || lga.description;
+        lga = await this.lgaRepository.save(lga);
+        lgaByCode.set(lgaCode, lga);
+        stats.lgasUpdated += 1;
+      }
+
+      const wardCode = row.wardCode.toUpperCase();
+      const wardKey = `${lga.id}:${wardCode}`;
+      let ward = wardByKey.get(wardKey);
+
+      if (!ward) {
+        ward = this.wardRepository.create({ lgaId: lga.id, lga, code: wardCode, name: row.wardName, description: row.wardDescription || undefined });
+        ward = await this.wardRepository.save(ward);
+        wardByKey.set(wardKey, ward);
+        stats.wardsCreated += 1;
+      } else if (ward.name !== row.wardName || (row.wardDescription && ward.description !== row.wardDescription)) {
+        ward.name = row.wardName;
+        ward.description = row.wardDescription || ward.description;
+        ward = await this.wardRepository.save(ward);
+        wardByKey.set(wardKey, ward);
+        stats.wardsUpdated += 1;
+      }
+
+      const pollingUnitCode = row.pollingUnitCode.toUpperCase();
+      let pollingUnit = pollingUnitByCode.get(pollingUnitCode);
+
+      if (!pollingUnit) {
+        pollingUnit = this.pollingUnitRepository.create({
+          lgaId: lga.id,
+          wardId: ward.id,
+          lga,
+          ward,
+          code: pollingUnitCode,
+          name: row.pollingUnitName,
+          address: row.address,
+          registeredVoters: row.registeredVoters,
+        });
+        pollingUnit = await this.pollingUnitRepository.save(pollingUnit);
+        pollingUnitByCode.set(pollingUnitCode, pollingUnit);
+        stats.pollingUnitsCreated += 1;
+      } else {
+        const shouldUpdate =
+          pollingUnit.name !== row.pollingUnitName ||
+          pollingUnit.address !== row.address ||
+          pollingUnit.registeredVoters !== row.registeredVoters ||
+          pollingUnit.lgaId !== lga.id ||
+          pollingUnit.wardId !== ward.id;
+
+        if (shouldUpdate) {
+          pollingUnit.name = row.pollingUnitName;
+          pollingUnit.address = row.address;
+          pollingUnit.registeredVoters = row.registeredVoters;
+          pollingUnit.lgaId = lga.id;
+          pollingUnit.wardId = ward.id;
+          pollingUnit.lga = lga;
+          pollingUnit.ward = ward;
+          pollingUnit = await this.pollingUnitRepository.save(pollingUnit);
+          pollingUnitByCode.set(pollingUnitCode, pollingUnit);
+          stats.pollingUnitsUpdated += 1;
+        }
+      }
+    }
+
+    return { message: 'Location import completed successfully', stats };
+  }
+
   // SUPPORTER STATS
   async getSupporterStats() {
     const now = new Date();

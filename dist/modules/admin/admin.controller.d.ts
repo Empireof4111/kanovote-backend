@@ -104,5 +104,16 @@ export declare class AdminController {
         wards: import("../../entities/ward.entity").Ward[];
         pollingUnits: import("../../entities/polling-unit.entity").PollingUnit[];
     }>;
+    importLocations(file: Express.Multer.File, replace?: string): Promise<{
+        message: string;
+        stats: {
+            lgasCreated: number;
+            lgasUpdated: number;
+            wardsCreated: number;
+            wardsUpdated: number;
+            pollingUnitsCreated: number;
+            pollingUnitsUpdated: number;
+        };
+    }>;
 }
 //# sourceMappingURL=admin.controller.d.ts.map

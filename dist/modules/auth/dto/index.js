@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SetNewPasswordDto = exports.ResetPasswordDto = exports.RegisterDto = exports.LoginDto = void 0;
+exports.ChangePasswordDto = exports.UpdateProfileDto = exports.SetNewPasswordDto = exports.ResetPasswordDto = exports.RegisterDto = exports.LoginDto = void 0;
 const class_validator_1 = require("class-validator");
 class LoginDto {
 }
@@ -84,4 +84,43 @@ __decorate([
     (0, class_validator_1.MaxLength)(100),
     __metadata("design:type", String)
 ], SetNewPasswordDto.prototype, "newPassword", void 0);
+class UpdateProfileDto {
+}
+exports.UpdateProfileDto = UpdateProfileDto;
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(2),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], UpdateProfileDto.prototype, "firstName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(2),
+    (0, class_validator_1.MaxLength)(255),
+    __metadata("design:type", String)
+], UpdateProfileDto.prototype, "lastName", void 0);
+__decorate([
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(10),
+    (0, class_validator_1.MaxLength)(20),
+    __metadata("design:type", String)
+], UpdateProfileDto.prototype, "phone", void 0);
+class ChangePasswordDto {
+}
+exports.ChangePasswordDto = ChangePasswordDto;
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], ChangePasswordDto.prototype, "currentPassword", void 0);
+__decorate([
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.MaxLength)(100),
+    __metadata("design:type", String)
+], ChangePasswordDto.prototype, "newPassword", void 0);
 //# sourceMappingURL=index.js.map

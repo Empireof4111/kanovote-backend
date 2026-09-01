@@ -17,4 +17,13 @@ export declare class SetNewPasswordDto {
     token: string;
     newPassword: string;
 }
+export declare class UpdateProfileDto {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+}
+export declare class ChangePasswordDto {
+    currentPassword: string;
+    newPassword: string;
+}
 //# sourceMappingURL=index.d.ts.map

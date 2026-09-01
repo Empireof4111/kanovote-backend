@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   UseGuards,
   Request,
@@ -12,7 +13,7 @@ import {
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
+import { ChangePasswordDto, LoginDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto, UpdateProfileDto } from './dto';
 
 @Controller('auth')
 export class AuthController {
@@ -50,6 +51,20 @@ export class AuthController {
       isEmailVerified: req.user.isEmailVerified,
       createdAt: req.user.createdAt,
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch('profile')
+  @HttpCode(HttpStatus.OK)
+  async updateProfile(@Request() req: any, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.authService.updateProfile(req.user.id, updateProfileDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  async changePassword(@Request() req: any, @Body() changePasswordDto: ChangePasswordDto) {
+    return this.authService.changePassword(req.user.id, changePasswordDto);
   }
 
   @UseGuards(JwtAuthGuard)

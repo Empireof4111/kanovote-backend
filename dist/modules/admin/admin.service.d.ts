@@ -48,6 +48,17 @@ export declare class AdminService {
     getPollingUnitById(id: string): Promise<PollingUnit>;
     updatePollingUnit(id: string, updatePollingUnitDto: UpdatePollingUnitDto): Promise<PollingUnit>;
     deletePollingUnit(id: string): Promise<void>;
+    importLocations(file: Express.Multer.File | undefined, replace?: boolean): Promise<{
+        message: string;
+        stats: {
+            lgasCreated: number;
+            lgasUpdated: number;
+            wardsCreated: number;
+            wardsUpdated: number;
+            pollingUnitsCreated: number;
+            pollingUnitsUpdated: number;
+        };
+    }>;
     getSupporterStats(): Promise<{
         total: number;
         verified: number;

@@ -115,6 +115,29 @@ let AuthService = class AuthService {
         });
         return this.login(user);
     }
+    async updateProfile(userId, updateProfileDto) {
+        const user = await this.userService.updateProfile(userId, updateProfileDto);
+        return {
+            id: user.id,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            username: user.username,
+            role: user.role,
+            phone: user.phone,
+            isEmailVerified: user.isEmailVerified,
+            createdAt: user.createdAt,
+        };
+    }
+    async changePassword(userId, changePasswordDto) {
+        const user = await this.userService.findById(userId);
+        if (!user || !(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
+            throw new common_1.UnauthorizedException('Current password is incorrect');
+        }
+        const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+        await this.userService.updatePassword(userId, hashedPassword);
+        return { message: 'Password updated successfully' };
+    }
     async requestPasswordReset(resetPasswordDto) {
         const user = await this.userService.findByEmail(resetPasswordDto.email);
         if (!user) {

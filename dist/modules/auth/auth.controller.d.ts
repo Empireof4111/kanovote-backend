@@ -1,5 +1,5 @@
 import { AuthService } from './auth.service';
-import { RegisterDto, ResetPasswordDto, SetNewPasswordDto } from './dto';
+import { ChangePasswordDto, RegisterDto, ResetPasswordDto, SetNewPasswordDto, UpdateProfileDto } from './dto';
 export declare class AuthController {
     private authService;
     constructor(authService: AuthService);
@@ -39,6 +39,20 @@ export declare class AuthController {
         phone: any;
         isEmailVerified: any;
         createdAt: any;
+    }>;
+    updateProfile(req: any, updateProfileDto: UpdateProfileDto): Promise<{
+        id: string;
+        firstName: string;
+        lastName: string;
+        email: string;
+        username: string;
+        role: import("../../entities/user-role.enum").UserRole;
+        phone: string;
+        isEmailVerified: boolean;
+        createdAt: Date;
+    }>;
+    changePassword(req: any, changePasswordDto: ChangePasswordDto): Promise<{
+        message: string;
     }>;
     logout(session: any): Promise<{
         message: string;
