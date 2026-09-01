@@ -1,18 +1,19 @@
 FROM node:20-alpine
 
 WORKDIR /usr/src/app
-ENV PATH /usr/src/app/node_modules/.bin:$PATH
+ENV PATH=/usr/src/app/node_modules/.bin:$PATH
+ENV PORT=3000
 
-# Copy backend source
-COPY backend/kanovote-backend .
+COPY package*.json ./
+RUN npm ci --legacy-peer-deps
 
-# Copy entrypoint
-COPY backend/kanovote-backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY . .
+RUN npm run build
+
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-ENV PORT=3000
+ENV NODE_ENV=production
 EXPOSE 3000
-
-# Use entrypoint to install deps when missing, then run the default command
 ENTRYPOINT ["sh", "/usr/local/bin/docker-entrypoint.sh"]
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "start:prod"]
