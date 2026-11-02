@@ -24,9 +24,9 @@ let AgentController = class AgentController {
     constructor(agentService) {
         this.agentService = agentService;
     }
-    // Register new agent (with user creation) - accessible without auth
-    async registerAgent(registerAgentDto) {
-        const result = await this.agentService.registerAgent(registerAgentDto);
+    // Supervisors may register field agents within their assigned LGA.
+    async registerAgent(req, registerAgentDto) {
+        const result = await this.agentService.registerAgent(registerAgentDto, req.user);
         // Don't return the password hash
         const { password, ...userWithoutPassword } = result.user;
         return { agent: result.agent, user: userWithoutPassword };
@@ -87,11 +87,12 @@ exports.AgentController = AgentController;
 __decorate([
     (0, common_1.Post)('register'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.SUPER_ADMIN, user_role_enum_1.UserRole.SUPERVISOR),
     (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
-    __param(0, (0, common_1.Body)()),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [dto_1.RegisterAgentDto]),
+    __metadata("design:paramtypes", [Object, dto_1.RegisterAgentDto]),
     __metadata("design:returntype", Promise)
 ], AgentController.prototype, "registerAgent", null);
 __decorate([

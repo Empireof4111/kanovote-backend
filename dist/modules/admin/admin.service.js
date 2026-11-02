@@ -481,6 +481,40 @@ let AdminService = class AdminService {
     }
     // DASHBOARD STATS
     async getDashboardStats(requester) {
+        if (requester?.role === user_role_enum_1.UserRole.FIELD_AGENT) {
+            const where = { registeredByUserId: requester.id };
+            const [total, verified, rejected, pending] = await Promise.all([
+                this.supporterRepository.count({ where }),
+                this.supporterRepository.count({ where: { ...where, status: supporter_entity_1.VerificationStatus.VERIFIED } }),
+                this.supporterRepository.count({ where: { ...where, status: supporter_entity_1.VerificationStatus.REJECTED } }),
+                this.supporterRepository.count({ where: { ...where, status: supporter_entity_1.VerificationStatus.PENDING } }),
+            ]);
+            return { supporters: { total, verified, rejected, pending } };
+        }
+        if (requester?.role === user_role_enum_1.UserRole.SUPERVISOR) {
+            const supporters = { total: 0, verified: 0, rejected: 0, pending: 0 };
+            const supervisor = await this.agentRepository.findOne({
+                where: { userId: requester.id, role: user_role_enum_1.UserRole.SUPERVISOR },
+            });
+            if (!supervisor?.lga) {
+                return { supporters };
+            }
+            const counts = await this.supporterRepository
+                .createQueryBuilder('supporter')
+                .innerJoin(agent_entity_1.Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+                .where('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: user_role_enum_1.UserRole.FIELD_AGENT })
+                .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisor.lga })
+                .select('supporter.status', 'status')
+                .addSelect('COUNT(*)', 'count')
+                .groupBy('supporter.status')
+                .getRawMany();
+            for (const row of counts) {
+                const count = Number(row.count);
+                supporters[row.status] = count;
+                supporters.total += count;
+            }
+            return { supporters };
+        }
         const [userStats, agentStats, supporterStats, lgaCount, wardCount, puCount] = await Promise.all([
             this.getUserStats(),
             this.getAgentStats(),

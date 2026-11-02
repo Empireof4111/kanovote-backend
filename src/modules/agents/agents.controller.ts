@@ -23,13 +23,13 @@ import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, 
 export class AgentController {
   constructor(private agentService: AgentService) {}
 
-  // Register new agent (with user creation) - accessible without auth
+  // Supervisors may register field agents within their assigned LGA.
   @Post('register')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN, UserRole.SUPERVISOR)
   @HttpCode(HttpStatus.CREATED)
-  async registerAgent(@Body() registerAgentDto: RegisterAgentDto) {
-    const result = await this.agentService.registerAgent(registerAgentDto);
+  async registerAgent(@Request() req: any, @Body() registerAgentDto: RegisterAgentDto) {
+    const result = await this.agentService.registerAgent(registerAgentDto, req.user);
     // Don't return the password hash
     const { password, ...userWithoutPassword } = result.user;
     return { agent: result.agent, user: userWithoutPassword };

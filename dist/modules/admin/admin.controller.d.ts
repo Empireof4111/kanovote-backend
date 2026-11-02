@@ -5,6 +5,21 @@ export declare class AdminController {
     private adminService;
     constructor(adminService: AdminService);
     getDashboard(req: any): Promise<{
+        supporters: {
+            total: number;
+            verified: number;
+            rejected: number;
+            pending: number;
+        };
+        users?: undefined;
+        agents?: undefined;
+        registrationsByMonth?: undefined;
+        registrationsByLga?: undefined;
+        genderDistribution?: undefined;
+        ageDistribution?: undefined;
+        recentActivities?: undefined;
+        geography?: undefined;
+    } | {
         users: {
             total: number;
             superAdmins: number;

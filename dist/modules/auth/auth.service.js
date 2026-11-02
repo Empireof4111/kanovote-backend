@@ -131,8 +131,14 @@ let AuthService = class AuthService {
     }
     async changePassword(userId, changePasswordDto) {
         const user = await this.userService.findById(userId);
-        if (!user || !(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
-            throw new common_1.UnauthorizedException('Current password is incorrect');
+        if (!user) {
+            throw new common_1.UnauthorizedException('User not found');
+        }
+        if (!(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
+            throw new common_1.BadRequestException('Current password is incorrect');
+        }
+        if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
+            throw new common_1.BadRequestException('Choose a new password different from your current password');
         }
         const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
         await this.userService.updatePassword(userId, hashedPassword);

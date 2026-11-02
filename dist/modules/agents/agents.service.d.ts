@@ -3,13 +3,18 @@ import { Agent, AgentStatus } from '@/entities/agent.entity';
 import { Registration } from '@/entities/registration.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
+import { Ward } from '@/entities/ward.entity';
 import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
 export declare class AgentService {
     private agentRepository;
     private registrationRepository;
     private userRepository;
-    constructor(agentRepository: Repository<Agent>, registrationRepository: Repository<Registration>, userRepository: Repository<User>);
-    registerAgent(registerAgentDto: RegisterAgentDto): Promise<{
+    private wardRepository;
+    constructor(agentRepository: Repository<Agent>, registrationRepository: Repository<Registration>, userRepository: Repository<User>, wardRepository: Repository<Ward>);
+    registerAgent(registerAgentDto: RegisterAgentDto, requester: {
+        id: string;
+        role: UserRole;
+    }): Promise<{
         agent: Agent;
         user: User;
     }>;

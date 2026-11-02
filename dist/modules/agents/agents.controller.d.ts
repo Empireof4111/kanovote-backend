@@ -4,7 +4,7 @@ import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, 
 export declare class AgentController {
     private agentService;
     constructor(agentService: AgentService);
-    registerAgent(registerAgentDto: RegisterAgentDto): Promise<{
+    registerAgent(req: any, registerAgentDto: RegisterAgentDto): Promise<{
         agent: import("../../entities/agent.entity").Agent;
         user: {
             firstName: string;

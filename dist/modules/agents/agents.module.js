@@ -12,6 +12,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const agent_entity_1 = require("../../entities/agent.entity");
 const registration_entity_1 = require("../../entities/registration.entity");
 const user_entity_1 = require("../../entities/user.entity");
+const ward_entity_1 = require("../../entities/ward.entity");
 const agents_service_1 = require("./agents.service");
 const agents_controller_1 = require("./agents.controller");
 let AgentModule = class AgentModule {
@@ -19,7 +20,7 @@ let AgentModule = class AgentModule {
 exports.AgentModule = AgentModule;
 exports.AgentModule = AgentModule = __decorate([
     (0, common_1.Module)({
-        imports: [typeorm_1.TypeOrmModule.forFeature([agent_entity_1.Agent, user_entity_1.User, registration_entity_1.Registration])],
+        imports: [typeorm_1.TypeOrmModule.forFeature([agent_entity_1.Agent, user_entity_1.User, registration_entity_1.Registration, ward_entity_1.Ward])],
         providers: [agents_service_1.AgentService],
         controllers: [agents_controller_1.AgentController],
         exports: [agents_service_1.AgentService],

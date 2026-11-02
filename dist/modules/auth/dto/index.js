@@ -119,7 +119,7 @@ __decorate([
 ], ChangePasswordDto.prototype, "currentPassword", void 0);
 __decorate([
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.MinLength)(6),
+    (0, class_validator_1.MinLength)(8, { message: "New password must be at least 8 characters long" }),
     (0, class_validator_1.MaxLength)(100),
     __metadata("design:type", String)
 ], ChangePasswordDto.prototype, "newPassword", void 0);

@@ -18,6 +18,7 @@ const user_entity_1 = require("../../entities/user.entity");
 const user_service_1 = require("../user/user.service");
 const jwt_strategy_1 = require("./strategies/jwt.strategy");
 const local_strategy_1 = require("./strategies/local.strategy");
+const admin_bootstrap_service_1 = require("./admin-bootstrap.service");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -37,7 +38,7 @@ exports.AuthModule = AuthModule = __decorate([
                 }),
             }),
         ],
-        providers: [auth_service_1.AuthService, user_service_1.UserService, jwt_strategy_1.JwtStrategy, local_strategy_1.LocalStrategy],
+        providers: [auth_service_1.AuthService, user_service_1.UserService, jwt_strategy_1.JwtStrategy, local_strategy_1.LocalStrategy, admin_bootstrap_service_1.AdminBootstrapService],
         controllers: [auth_controller_1.AuthController],
         exports: [auth_service_1.AuthService, user_service_1.UserService],
     })

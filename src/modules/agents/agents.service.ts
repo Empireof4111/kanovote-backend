@@ -6,6 +6,7 @@ import { Agent, AgentStatus } from '@/entities/agent.entity';
 import { Registration, RegistrationStatus } from '@/entities/registration.entity';
 import { User } from '@/entities/user.entity';
 import { UserRole } from '@/entities/user-role.enum';
+import { Ward } from '@/entities/ward.entity';
 import { CreateAgentDto, UpdateAgentDto, AgentPerformanceDto, RegisterAgentDto, ResetPasswordDto } from './dto';
 
 @Injectable()
@@ -17,16 +18,51 @@ export class AgentService {
     private registrationRepository: Repository<Registration>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Ward)
+    private wardRepository: Repository<Ward>,
   ) {}
 
   // Register new agent with user creation
-  async registerAgent(registerAgentDto: RegisterAgentDto): Promise<{ agent: Agent; user: User }> {
+  async registerAgent(
+    registerAgentDto: RegisterAgentDto,
+    requester: { id: string; role: UserRole },
+  ): Promise<{ agent: Agent; user: User }> {
+    if (requester.role !== UserRole.SUPER_ADMIN && requester.role !== UserRole.SUPERVISOR) {
+      throw new ForbiddenException('You do not have permission to register agents');
+    }
+
+    if (requester.role === UserRole.SUPERVISOR) {
+      if (registerAgentDto.role !== UserRole.FIELD_AGENT) {
+        throw new ForbiddenException('Supervisors can only register field agents');
+      }
+
+      const supervisor = await this.findSupervisorAgentByUserId(requester.id);
+      if (supervisor.status !== AgentStatus.ACTIVE || !supervisor.lga || !supervisor.state) {
+        throw new ForbiddenException('An active supervisor profile with an assigned local government area is required');
+      }
+      if (registerAgentDto.lga !== supervisor.lga || registerAgentDto.state !== supervisor.state) {
+        throw new ForbiddenException('You can only register field agents in your assigned local government area');
+      }
+
+      const ward = await this.wardRepository.findOne({
+        where: { id: registerAgentDto.ward, lgaId: supervisor.lga },
+      });
+      if (!ward) {
+        throw new BadRequestException('Select a ward in your assigned local government area');
+      }
+    }
+
     const { email, phone, password, firstName, lastName, ...agentData } = registerAgentDto;
 
     // Check if user with this email already exists
     const existingUser = await this.userRepository.findOne({
       where: { email },
     });
+
+    // Supervisor registration must never change an existing user's credentials or role.
+    if (existingUser && requester.role === UserRole.SUPERVISOR) {
+      throw new ConflictException('User with this email already exists');
+    }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);

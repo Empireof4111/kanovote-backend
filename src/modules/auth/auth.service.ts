@@ -108,8 +108,14 @@ export class AuthService {
 
   async changePassword(userId: string, changePasswordDto: ChangePasswordDto) {
     const user = await this.userService.findById(userId);
-    if (!user || !(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
-      throw new UnauthorizedException('Current password is incorrect');
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+    if (!(await bcrypt.compare(changePasswordDto.currentPassword, user.password))) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+    if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
+      throw new BadRequestException('Choose a new password different from your current password');
     }
 
     const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);

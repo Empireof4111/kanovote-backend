@@ -587,6 +587,47 @@ export class AdminService {
 
   // DASHBOARD STATS
   async getDashboardStats(requester?: { id: string; role: UserRole }) {
+    if (requester?.role === UserRole.FIELD_AGENT) {
+      const where = { registeredByUserId: requester.id };
+      const [total, verified, rejected, pending] = await Promise.all([
+        this.supporterRepository.count({ where }),
+        this.supporterRepository.count({ where: { ...where, status: VerificationStatus.VERIFIED } }),
+        this.supporterRepository.count({ where: { ...where, status: VerificationStatus.REJECTED } }),
+        this.supporterRepository.count({ where: { ...where, status: VerificationStatus.PENDING } }),
+      ]);
+
+      return { supporters: { total, verified, rejected, pending } };
+    }
+
+    if (requester?.role === UserRole.SUPERVISOR) {
+      const supporters = { total: 0, verified: 0, rejected: 0, pending: 0 };
+      const supervisor = await this.agentRepository.findOne({
+        where: { userId: requester.id, role: UserRole.SUPERVISOR },
+      });
+
+      if (!supervisor?.lga) {
+        return { supporters };
+      }
+
+      const counts = await this.supporterRepository
+        .createQueryBuilder('supporter')
+        .innerJoin(Agent, 'registeredAgent', 'registeredAgent.userId = supporter.registeredByUserId')
+        .where('registeredAgent.role = :fieldAgentRole', { fieldAgentRole: UserRole.FIELD_AGENT })
+        .andWhere('registeredAgent.lga = :supervisorLga', { supervisorLga: supervisor.lga })
+        .select('supporter.status', 'status')
+        .addSelect('COUNT(*)', 'count')
+        .groupBy('supporter.status')
+        .getRawMany<{ status: VerificationStatus; count: string }>();
+
+      for (const row of counts) {
+        const count = Number(row.count);
+        supporters[row.status] = count;
+        supporters.total += count;
+      }
+
+      return { supporters };
+    }
+
     const [userStats, agentStats, supporterStats, lgaCount, wardCount, puCount] = await Promise.all([
       this.getUserStats(),
       this.getAgentStats(),

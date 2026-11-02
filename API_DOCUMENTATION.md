@@ -16,7 +16,8 @@ http://localhost:3000/api
 ### Register New Agent (with User and Password Creation)
 - **Method**: POST
 - **Endpoint**: `/agents/register`
-- **Authentication**: None (public endpoint)
+- **Authentication**: Required (Super Admin, Supervisor)
+- **Supervisor restrictions**: An active supervisor profile with an assigned LGA is required. The role must be field_agent, the state and LGA must match the supervisor assignment, and the ward must belong to that LGA. Existing accounts cannot be overwritten. Other role/LGA requests return 403; an invalid ward returns 400; an existing email returns 409.
 - **Request Body**:
 ```json
 {
@@ -28,8 +29,8 @@ http://localhost:3000/api
   "confirmPassword": "SecurePass123",
   "role": "field_agent",
   "state": "Kano",
-  "lga": "Kano Municipal",
-  "ward": "Sharada"
+  "lga": "assigned-lga-uuid",
+  "ward": "ward-in-assigned-lga-uuid"
 }
 ```
 - **Response**:
@@ -40,8 +41,8 @@ http://localhost:3000/api
     "userId": "uuid",
     "role": "field_agent",
     "state": "Kano",
-    "lga": "Kano Municipal",
-    "ward": "Sharada",
+    "lga": "assigned-lga-uuid",
+    "ward": "ward-in-assigned-lga-uuid",
     "status": "active",
     "joinedAt": "2024-01-01T00:00:00Z"
   },
@@ -560,3 +561,19 @@ NODE_ENV=development
 5. Agent status values: `active`, `inactive`, `suspended`
 6. All password fields must be minimum 8 characters
 7. Email addresses must be unique across the system
+
+## Field-Agent Dashboard
+
+GET /admin/dashboard requires authentication. For a field agent, it returns only the member counts belonging to the authenticated user:
+
+    { "supporters": { "total": 5, "verified": 2, "rejected": 1, "pending": 2 } }
+
+These counts use supporters.registeredByUserId and the current supporter verification status. Query parameters cannot select another agent. Campaign analytics are omitted from field-agent responses.
+
+## Supervisor Dashboard
+
+For a supervisor, GET /admin/dashboard returns the same four supporter count fields as the field-agent response. Counts cover only members registered by field agents whose agent profiles are assigned to the authenticated supervisor LGA. The API derives the LGA from the supervisor profile; query parameters cannot select another LGA. Missing assignments return zeros. Campaign analytics and campaign-wide counts are omitted.
+
+## Change Your Own Password
+
+POST /auth/change-password is available to authenticated supervisors, field agents, and super admins. Send currentPassword and newPassword. New passwords must contain at least 8 characters and differ from the current password. The server takes the target user ID from authentication. An incorrect current password returns 400 so the client can keep the current session and allow a retry. Missing/expired authentication returns 401. The new password is hashed before saving; the old password no longer works for subsequent logins.
