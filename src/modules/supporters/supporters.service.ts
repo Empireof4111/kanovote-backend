@@ -18,7 +18,11 @@ export class SupporterService {
     private registrationRepository: Repository<Registration>,
   ) {}
 
-  async create(createSupporterDto: CreateSupporterDto, registeredByUserId: string): Promise<Supporter> {
+  async create(
+    createSupporterDto: CreateSupporterDto,
+    registeredByUserId: string,
+    repository: Repository<Supporter> = this.supporterRepository,
+  ): Promise<Supporter> {
     const normalizedEmail = createSupporterDto.email?.trim().toLowerCase() || null;
     const normalizedPhone = createSupporterDto.phone.trim();
     const normalizedVoterCardNumber = createSupporterDto.voterCardNumber.trim();
@@ -32,7 +36,7 @@ export class SupporterService {
       duplicateConditions.push({ email: normalizedEmail });
     }
 
-    const existingSupporter = await this.supporterRepository.findOne({
+    const existingSupporter = await repository.findOne({
       where: duplicateConditions,
     });
 
@@ -52,7 +56,7 @@ export class SupporterService {
       throw new BadRequestException('Supporter already exists');
     }
 
-    const supporter = this.supporterRepository.create({
+    const supporter = repository.create({
       ...createSupporterDto,
       email: normalizedEmail,
       phone: normalizedPhone,
@@ -60,7 +64,7 @@ export class SupporterService {
       registeredByUserId,
     });
 
-    return this.supporterRepository.save(supporter);
+    return repository.save(supporter);
   }
 
   async findById(id: string): Promise<Supporter> {

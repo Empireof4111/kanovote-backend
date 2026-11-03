@@ -11,18 +11,43 @@ import {
   HttpCode,
   HttpStatus,
   Request,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { SupporterService } from './supporters.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '@/entities/user-role.enum';
 import { CreateSupporterDto, UpdateSupporterDto, VerifySupporterDto } from './dto';
+import { RegistrationImages, SupporterRegistrationService } from './supporter-registration.service';
+import { maxImageBytes } from '../file-upload/image-validation';
 
 @Controller('supporters')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SupporterController {
-  constructor(private supporterService: SupporterService) {}
+  constructor(
+    private supporterService: SupporterService,
+    private registrationService: SupporterRegistrationService,
+  ) {}
+
+  @Post('register-with-images')
+  @Roles(UserRole.FIELD_AGENT)
+  @UseInterceptors(FileFieldsInterceptor([
+    { name: 'passport', maxCount: 1 },
+    { name: 'voter_card', maxCount: 1 },
+  // Multer stops at its limit; allow one extra byte so exactly 5 MB remains
+  // valid. The service enforces the inclusive size limit before any writes.
+  ], { limits: { fileSize: maxImageBytes() + 1, files: 2 } }))
+  @HttpCode(HttpStatus.CREATED)
+  async registerWithImages(
+    @Request() req: any,
+    @Body() dto: CreateSupporterDto,
+    @UploadedFiles() files: RegistrationImages,
+  ) {
+    return this.registrationService.register(dto, req.user.id, files);
+  }
 
   @Post()
   @Roles(UserRole.FIELD_AGENT, UserRole.SUPERVISOR)

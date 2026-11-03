@@ -7,6 +7,9 @@ import { Supporter } from '@/entities/supporter.entity';
 import { UserRole } from '@/entities/user-role.enum';
 import { v4 as uuid } from 'uuid';
 import { v2 as cloudinary } from 'cloudinary';
+import { validateImage } from './image-validation';
+
+export type StoredImage = Pick<FileUpload, 'fileName' | 'filePath' | 'mimeType' | 'fileSize' | 'url'>;
 
 @Injectable()
 export class FileUploadService {
@@ -31,18 +34,22 @@ export class FileUploadService {
     uploadedByUserId: string,
     fileType: FileType,
   ): Promise<FileUpload> {
-    // Validate file
-    const maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '5242880') || 5242880; // 5MB default
-    if (file.size > maxFileSize) {
-      throw new BadRequestException(`File size exceeds maximum limit of ${maxFileSize / 1024 / 1024}MB`);
-    }
+    const image = await this.uploadImageToStorage(file, supporterId);
 
-    // Validate file type
-    const allowedMimes = ['image/jpeg', 'image/png'];
-    if (!allowedMimes.includes(file.mimetype)) {
-      throw new BadRequestException('Invalid file type. Only JPEG and PNG images are allowed');
-    }
+    const fileUpload = this.fileUploadRepository.create({
+      ...image,
+      supporterId,
+      uploadedByUserId,
+      fileType,
+    });
+    const savedFile = await this.fileUploadRepository.save(fileUpload);
+    await this.syncSupporterDocumentState(supporterId);
+    return savedFile;
+  }
 
+  // Storage upload is separate so registrations can save all database rows atomically.
+  async uploadImageToStorage(file: Express.Multer.File, supporterId: string): Promise<StoredImage> {
+    validateImage(file);
     try {
       if (
         !process.env.CLOUDINARY_CLOUD_NAME ||
@@ -73,28 +80,22 @@ export class FileUploadService {
         uploadStream.end(file.buffer);
       });
 
-      // Create database record
-      const fileUpload = this.fileUploadRepository.create({
-        supporterId,
-        uploadedByUserId,
-        fileType,
+      return {
         fileName: file.originalname,
         filePath: uploadResult.public_id,
         mimeType: file.mimetype,
         fileSize: file.size,
         url: uploadResult.secure_url,
-      });
-
-      const savedFile = await this.fileUploadRepository.save(fileUpload);
-
-      await this.syncSupporterDocumentState(supporterId);
-
-      return savedFile;
+      };
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : 'Failed to upload file',
       );
     }
+  }
+
+  async deleteStoredImage(publicId: string): Promise<void> {
+    await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
   }
 
   async findById(id: string): Promise<FileUpload> {

@@ -9,7 +9,7 @@ export declare class SupporterService {
     private agentRepository;
     private registrationRepository;
     constructor(supporterRepository: Repository<Supporter>, agentRepository: Repository<Agent>, registrationRepository: Repository<Registration>);
-    create(createSupporterDto: CreateSupporterDto, registeredByUserId: string): Promise<Supporter>;
+    create(createSupporterDto: CreateSupporterDto, registeredByUserId: string, repository?: Repository<Supporter>): Promise<Supporter>;
     findById(id: string): Promise<Supporter>;
     findAll(skip?: number, take?: number, filters?: {
         state?: string;

@@ -14,15 +14,22 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupporterController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const supporters_service_1 = require("./supporters.service");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const roles_guard_1 = require("../auth/guards/roles.guard");
 const roles_decorator_1 = require("../auth/decorators/roles.decorator");
 const user_role_enum_1 = require("../../entities/user-role.enum");
 const dto_1 = require("./dto");
+const supporter_registration_service_1 = require("./supporter-registration.service");
+const image_validation_1 = require("../file-upload/image-validation");
 let SupporterController = class SupporterController {
-    constructor(supporterService) {
+    constructor(supporterService, registrationService) {
         this.supporterService = supporterService;
+        this.registrationService = registrationService;
+    }
+    async registerWithImages(req, dto, files) {
+        return this.registrationService.register(dto, req.user.id, files);
     }
     async create(req, createSupporterDto) {
         return this.supporterService.create(createSupporterDto, req.user.id);
@@ -57,6 +64,23 @@ let SupporterController = class SupporterController {
     }
 };
 exports.SupporterController = SupporterController;
+__decorate([
+    (0, common_1.Post)('register-with-images'),
+    (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FIELD_AGENT),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileFieldsInterceptor)([
+        { name: 'passport', maxCount: 1 },
+        { name: 'voter_card', maxCount: 1 },
+        // Multer stops at its limit; allow one extra byte so exactly 5 MB remains
+        // valid. The service enforces the inclusive size limit before any writes.
+    ], { limits: { fileSize: (0, image_validation_1.maxImageBytes)() + 1, files: 2 } })),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __param(2, (0, common_1.UploadedFiles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, dto_1.CreateSupporterDto, Object]),
+    __metadata("design:returntype", Promise)
+], SupporterController.prototype, "registerWithImages", null);
 __decorate([
     (0, common_1.Post)(),
     (0, roles_decorator_1.Roles)(user_role_enum_1.UserRole.FIELD_AGENT, user_role_enum_1.UserRole.SUPERVISOR),
@@ -137,6 +161,7 @@ __decorate([
 exports.SupporterController = SupporterController = __decorate([
     (0, common_1.Controller)('supporters'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    __metadata("design:paramtypes", [supporters_service_1.SupporterService])
+    __metadata("design:paramtypes", [supporters_service_1.SupporterService,
+        supporter_registration_service_1.SupporterRegistrationService])
 ], SupporterController);
 //# sourceMappingURL=supporters.controller.js.map

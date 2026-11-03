@@ -22,6 +22,7 @@ const supporter_entity_1 = require("../../entities/supporter.entity");
 const user_role_enum_1 = require("../../entities/user-role.enum");
 const uuid_1 = require("uuid");
 const cloudinary_1 = require("cloudinary");
+const image_validation_1 = require("./image-validation");
 let FileUploadService = class FileUploadService {
     constructor(fileUploadRepository, supporterRepository, agentRepository) {
         this.fileUploadRepository = fileUploadRepository;
@@ -34,16 +35,20 @@ let FileUploadService = class FileUploadService {
         });
     }
     async uploadFile(file, supporterId, uploadedByUserId, fileType) {
-        // Validate file
-        const maxFileSize = parseInt(process.env.MAX_FILE_SIZE || '5242880') || 5242880; // 5MB default
-        if (file.size > maxFileSize) {
-            throw new common_1.BadRequestException(`File size exceeds maximum limit of ${maxFileSize / 1024 / 1024}MB`);
-        }
-        // Validate file type
-        const allowedMimes = ['image/jpeg', 'image/png'];
-        if (!allowedMimes.includes(file.mimetype)) {
-            throw new common_1.BadRequestException('Invalid file type. Only JPEG and PNG images are allowed');
-        }
+        const image = await this.uploadImageToStorage(file, supporterId);
+        const fileUpload = this.fileUploadRepository.create({
+            ...image,
+            supporterId,
+            uploadedByUserId,
+            fileType,
+        });
+        const savedFile = await this.fileUploadRepository.save(fileUpload);
+        await this.syncSupporterDocumentState(supporterId);
+        return savedFile;
+    }
+    // Storage upload is separate so registrations can save all database rows atomically.
+    async uploadImageToStorage(file, supporterId) {
+        (0, image_validation_1.validateImage)(file);
         try {
             if (!process.env.CLOUDINARY_CLOUD_NAME ||
                 !process.env.CLOUDINARY_API_KEY ||
@@ -65,24 +70,20 @@ let FileUploadService = class FileUploadService {
                 });
                 uploadStream.end(file.buffer);
             });
-            // Create database record
-            const fileUpload = this.fileUploadRepository.create({
-                supporterId,
-                uploadedByUserId,
-                fileType,
+            return {
                 fileName: file.originalname,
                 filePath: uploadResult.public_id,
                 mimeType: file.mimetype,
                 fileSize: file.size,
                 url: uploadResult.secure_url,
-            });
-            const savedFile = await this.fileUploadRepository.save(fileUpload);
-            await this.syncSupporterDocumentState(supporterId);
-            return savedFile;
+            };
         }
         catch (error) {
             throw new common_1.BadRequestException(error instanceof Error ? error.message : 'Failed to upload file');
         }
+    }
+    async deleteStoredImage(publicId) {
+        await cloudinary_1.v2.uploader.destroy(publicId, { resource_type: 'image' });
     }
     async findById(id) {
         const file = await this.fileUploadRepository.findOne({ where: { id } });

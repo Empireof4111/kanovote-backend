@@ -26,7 +26,7 @@ let SupporterService = class SupporterService {
         this.agentRepository = agentRepository;
         this.registrationRepository = registrationRepository;
     }
-    async create(createSupporterDto, registeredByUserId) {
+    async create(createSupporterDto, registeredByUserId, repository = this.supporterRepository) {
         const normalizedEmail = createSupporterDto.email?.trim().toLowerCase() || null;
         const normalizedPhone = createSupporterDto.phone.trim();
         const normalizedVoterCardNumber = createSupporterDto.voterCardNumber.trim();
@@ -37,7 +37,7 @@ let SupporterService = class SupporterService {
         if (normalizedEmail) {
             duplicateConditions.push({ email: normalizedEmail });
         }
-        const existingSupporter = await this.supporterRepository.findOne({
+        const existingSupporter = await repository.findOne({
             where: duplicateConditions,
         });
         if (existingSupporter) {
@@ -52,14 +52,14 @@ let SupporterService = class SupporterService {
             }
             throw new common_1.BadRequestException('Supporter already exists');
         }
-        const supporter = this.supporterRepository.create({
+        const supporter = repository.create({
             ...createSupporterDto,
             email: normalizedEmail,
             phone: normalizedPhone,
             voterCardNumber: normalizedVoterCardNumber,
             registeredByUserId,
         });
-        return this.supporterRepository.save(supporter);
+        return repository.save(supporter);
     }
     async findById(id) {
         const supporter = await this.supporterRepository.findOne({

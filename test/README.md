@@ -10,6 +10,14 @@ Run the live API checks from the project root after Docker services are ready:
 
 The live checks create temporary users, sessions, LGAs and wards in the configured database, then remove those exact fixtures in a finally block. They verify supervisor login, registration in the assigned LGA, rejection of other roles/LGAs/wards and existing emails, login by the new field agent, and the supervisor agent list.
 
+# Member registration with images
+
+Member registration upload checks, with the local PostgreSQL container running, from the backend directory:
+
+    node test/supporter-registration.e2e.cjs
+
+This starts an isolated Nest test server using the real multipart interceptor, DTO validation, role guard, services and PostgreSQL transactions. Only token verification and external Cloudinary calls are substituted; no images are sent to Cloudinary. It checks both oversized files, the exact 5 MB boundary, missing/empty/unsupported images, invalid form data, authentication/roles, inactive agents, first/second upload failures, database failure, cleanup, successful retry and duplicate protection. Temporary accounts and member records are deleted afterward. `TEST_DATABASE_*` variables override local database defaults; schema synchronization is disabled.
+
 # Field-agent dashboard checks
 
 From the backend directory:
